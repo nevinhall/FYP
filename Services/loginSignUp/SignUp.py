@@ -15,3 +15,10 @@ def signUp(email,password):
 
 def valid_email(email):
     return validate_email(email)
+
+def delete_user():
+    """
+    delete user from application
+    """
+
+    pass
