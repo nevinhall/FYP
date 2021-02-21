@@ -46,3 +46,28 @@ class login_rpc(object):
         while self.response is None:
             self.connection.process_data_events()
         return self.response
+
+
+    def forgot_password(self, email,password):
+        print("password reset 1")
+
+        data = { 
+            "email": email,
+            "new_password": password
+        }
+
+        data  = json.dumps(data)
+
+        self.response = None
+        self.corr_id = str(uuid.uuid4())
+        self.channel.basic_publish(
+            exchange='',
+            routing_key='forgot_password_rpc_queue',
+            properties=pika.BasicProperties(
+                reply_to=self.callback_queue,
+                correlation_id=self.corr_id,
+            ),
+            body= data)
+        while self.response is None:
+            self.connection.process_data_events()
+        return self.response
