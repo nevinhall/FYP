@@ -1,4 +1,5 @@
 from .login_rpc import login_rpc
+from.sign_up_rpc import sign_up_rpc
 from flask import Flask, request
 
 import pika
@@ -28,8 +29,16 @@ def forgot_password_rpc_call():
 
     return("login failed")
 
+@app.route('/signup',methods=['POST'])
+def sign_up_rpc_call():
+      email = request.form.get('email')
+      password = request.form.get('password')
+      return(sign_up_rpc().sign_up(email,password))
+     
+    
 
-
-    #set FLASK_APP=hello.
-    #$env:FLASK_APP = "hello.py"
+    #set FLASK_APP=gateway.py
+    #$env:FLASK_APP = "gateway.py"
     #flask run
+
+      #set FLASK_APP=gateway && $env:FLASK_APP = "gateway.py" && flask run
