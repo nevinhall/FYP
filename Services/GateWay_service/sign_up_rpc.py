@@ -28,7 +28,10 @@ class sign_up_rpc(object):
    
 
     def sign_up(self, email,password):
-        data = { 
+        self.corr_id = str(uuid.uuid4())
+
+        data = {
+            "user_id" :self.corr_id,
             "email": email,
             "password": password
         }
@@ -36,7 +39,7 @@ class sign_up_rpc(object):
         data  = json.dumps(data)
 
         self.response = None
-        self.corr_id = str(uuid.uuid4())
+        
         self.channel.basic_publish(
             exchange='',
             routing_key='sign_up_rpc_gueue',

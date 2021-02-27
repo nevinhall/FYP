@@ -53,7 +53,7 @@ class login_rpc(object):
 
         data = { 
             "email": email,
-            "new_password": password
+            "password": password
         }
 
         data  = json.dumps(data)

@@ -1,5 +1,6 @@
 import pika
 import json
+import pymysql
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(host='localhost'))
@@ -11,7 +12,7 @@ channel.queue_declare(queue='forgot_password_rpc_queue')
 
 
 def login(email,password): 
-    return("login function")
+
     """
         if(valid_email(self,email)):
             if(valid_password(self,email,password)):
@@ -21,6 +22,8 @@ def login(email,password):
         else:
             return("response:email not valid")
     """
+    
+
 
 def valid_email(email):
     '''
