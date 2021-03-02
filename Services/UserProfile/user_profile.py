@@ -15,3 +15,9 @@ def delete_user_profile():
     delete user profile from database
     """
     pass
+
+"""
+React app calls this first to determine what page to render 
+"""
+def user_profile_exist():
+    pass
