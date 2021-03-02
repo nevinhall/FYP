@@ -31,7 +31,11 @@ def sign_up(user_id,email,password):
 
 
         #executing the quires
-        cursor.execute("INSERT INTO users VALUES (%s, %s, %s)", (user_id, email, password))
+        try:
+            cursor.execute("INSERT INTO users VALUES (%s, %s, %s)", (user_id, email, password))
+        except:
+            return("failed to sign up")
+       
 
         #commiting the connection then closing it.
         connection.commit()
@@ -40,7 +44,7 @@ def sign_up(user_id,email,password):
         
 
        
-    return("sign failed")
+    return("sign up succesful")
     
 
 def valid_email(email):

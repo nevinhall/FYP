@@ -10,44 +10,46 @@ channel = connection.channel()
 channel.queue_declare(queue='rpc_queue')
 channel.queue_declare(queue='forgot_password_rpc_queue')
 
+#database connection
+connection = pymysql.connect(host="localhost",user="root",passwd="",database="users" )
+cursor = connection.cursor()
+
+
 
 def login(email,password): 
+    if(valid_email(email) and valid_password(email,password)):
+        sql = "SELECT user_id FROM users WHERE email =%s"
+        cursor.execute(sql,email)
+        result = cursor.fetchall()
 
-    """
-        if(valid_email(self,email)):
-            if(valid_password(self,email,password)):
-               return("response: succesful login")
-            else:
-                return("response:password not valid")
-        else:
-            return("response:email not valid")
-    """
-    
+
+        return(result)
+    return("login failed")
 
 
 def valid_email(email):
-    '''
-    check email is in database
+    sql = "SELECT * FROM users WHERE email =%s"
+    cursor.execute(sql,email)
+    result = cursor.fetchall()
+    print(result)
 
-    if(response):
-        return true
-    else:
-        return false 
 
-    '''
-    pass
+    if(result == None):
+        return False
+    return True
+
+
 
 def valid_password(email,password):
-    '''
-    check password is in database
+    cursor.execute("""SELECT password FROM users WHERE email = %s AND password = %s""" ,(email, password))
+    result = cursor.fetchall()
+   
 
-    if(response):
-        return true
-    else:
-        return false 
+    if(result == None):
+        return False
+    return True
 
-    '''
-    pass
+
 
 def forgot_password(email,new_password):
     '''
