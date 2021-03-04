@@ -1,3 +1,4 @@
+from .user_profile_rpc import user_profile_rpc
 from .login_rpc import login_rpc
 from.sign_up_rpc import sign_up_rpc
 from flask import Flask, request
@@ -35,7 +36,14 @@ def sign_up_rpc_call():
       password = request.form.get('password')
       return(sign_up_rpc().sign_up(email,password))
      
-    
+@app.route('/userexists', methods=['POST'])
+def uses_exists_rpc_call():
+    user_id = request.form.get('user_id')
+    return(user_profile_rpc().user_exists(user_id))
+
+@app.route('/createuserprofile', methods=['Post'])
+def create_user_profile_rpc_call():
+        pass
 
     #set FLASK_APP=gateway.py
     #$env:FLASK_APP = "gateway.py"

@@ -26,10 +26,6 @@ def sign_up(user_id,email,password):
         # some other statements  with the help of cursor
       
 
-    
-    
-
-
         #executing the quires
         try:
             cursor.execute("INSERT INTO users VALUES (%s, %s, %s)", (user_id, email, password))

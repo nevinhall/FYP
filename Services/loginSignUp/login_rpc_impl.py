@@ -30,7 +30,7 @@ def login(email,password):
 def valid_email(email):
     sql = "SELECT * FROM users WHERE email =%s"
     cursor.execute(sql,email)
-    result = cursor.fetchall()
+    result = cursor.fetchone()
     print(result)
 
 
@@ -42,7 +42,7 @@ def valid_email(email):
 
 def valid_password(email,password):
     cursor.execute("""SELECT password FROM users WHERE email = %s AND password = %s""" ,(email, password))
-    result = cursor.fetchall()
+    result = cursor.fetchone()
    
 
     if(result == None):
