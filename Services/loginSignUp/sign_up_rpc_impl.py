@@ -11,6 +11,7 @@ channel = connection.channel()
 
 channel.queue_declare(queue='sign_up_rpc_gueue')
 
+
 def valid_email(email):
     return validate_email(email)
 

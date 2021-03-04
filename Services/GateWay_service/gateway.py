@@ -1,3 +1,4 @@
+import re
 from .user_profile_rpc import user_profile_rpc
 from .login_rpc import login_rpc
 from.sign_up_rpc import sign_up_rpc
@@ -43,7 +44,16 @@ def uses_exists_rpc_call():
 
 @app.route('/createuserprofile', methods=['Post'])
 def create_user_profile_rpc_call():
-        pass
+        user_id =  request.form.get('user_id')
+        height =  request.form.get('height')
+        weight =  request.form.get('weight')
+        activity_level =  request.form.get('activity_level')
+        allergies =  request.form.get('allergies')
+        age =  request.form.get('age')
+        dietray_options =  request.form.get('dietray_options')
+        
+
+        return(user_profile_rpc().create_user_profile(user_id, height, weight, activity_level, allergies, age,dietray_options))
 
     #set FLASK_APP=gateway.py
     #$env:FLASK_APP = "gateway.py"
