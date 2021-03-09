@@ -1,8 +1,12 @@
+#!/usr/bin/env python
 import re
 from .user_profile_rpc import user_profile_rpc
 from .login_rpc import login_rpc
 from.sign_up_rpc import sign_up_rpc
+from .generate_meal_plan_rpc import generate_meal_plan_rpc
+
 from flask import Flask, request
+
 
 import pika
 
@@ -52,9 +56,12 @@ def create_user_profile_rpc_call():
         age =  request.form.get('age')
         dietray_options =  request.form.get('dietray_options')
         
-
         return(user_profile_rpc().create_user_profile(user_id, height, weight, activity_level, allergies, age,dietray_options))
 
+@app.route('/generatemealplan', methods=['Post'])
+def generate_meal_plan_rpc_call():
+      user_id =  request.form.get('user_id')
+      return(generate_meal_plan_rpc().generate_meal_plan_rpc(user_id))
     #set FLASK_APP=gateway.py
     #$env:FLASK_APP = "gateway.py"
     #flask run
