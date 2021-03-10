@@ -1,0 +1,4 @@
+dietID,title,protein,carbs ,fats,al
+"0	",weight loss,1,0,0,1
+"1	",weight gain,1,1,0,0
+"2	",maintaince ,1,1,1,0
