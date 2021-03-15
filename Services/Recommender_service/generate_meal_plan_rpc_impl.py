@@ -8,41 +8,9 @@ from validate_email import validate_email
 import uuid
 import io
 import pandas as pd
+import rpc_call
+import Create_meal_plan_weights
 
-class rpc_call(object):
-
-    def __init__(self):
-        self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='localhost'))
-
-        self.channel = self.connection.channel()
-
-        result = self.channel.queue_declare(queue='', exclusive=True)
-        self.callback_queue = result.method.queue
-
-        self.channel.basic_consume(
-            queue=self.callback_queue,
-            on_message_callback=self.on_response,
-            auto_ack=True)
-
-    def on_response(self, ch, method, props, body):
-        if self.corr_id == props.correlation_id:
-            self.response = body
-
-    def get_user_profile(self, user_id):
-        self.response = None
-        self.corr_id = str(uuid.uuid4())
-        self.channel.basic_publish(
-            exchange='',
-            routing_key='get_user_profile_rpc_queue',
-            properties=pika.BasicProperties(
-                reply_to=self.callback_queue,
-                correlation_id=self.corr_id,
-            ),
-            body=user_id)
-        while self.response is None:
-            self.connection.process_data_events()
-        return self.response
 
 
 
@@ -58,9 +26,13 @@ channel.queue_declare(queue='get_user_profile_rpc_queue')
 def on_request_retrieve_user_details(ch, method, props, body):
     print("on_request_retrieve_user_details", body)
 
-    response = retrieve_user_details(body)
-    print("final", response)
+    user_profile = retrieve_user_details(body)
+    user_profile = normalise_data(user_profile)
+    user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile)
+    response = Create_meal_plan_weights.Create_meal_plan_weights().combinatorial_optimisation(user_profile_weights)
 
+    
+    
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
                      properties=pika.BasicProperties(correlation_id= \
@@ -71,9 +43,9 @@ def on_request_retrieve_user_details(ch, method, props, body):
 
 
 def retrieve_user_details(user_id):
-    user_profile = rpc_call().get_user_profile(user_id)
+    user_profile = rpc_call.rpc_call().get_user_profile(user_id)
     print("This is the user profile", user_profile)
-    return normalise_data(user_profile)
+    return user_profile
 
 
 def normalise_data(response):
@@ -135,71 +107,10 @@ def normalise_data(response):
     
     print(user_profile)
 
-    return create_meal_plan_weights(user_profile)
-
-
-def create_meal_plan_weights(user_profile):
-  
-    diets_matrix_factorization = pd.read_csv("C:/Users/R00165035/Desktop/FYP/Services/Recommender_service/diets.csv")
-
-   
-    
-    user_profile =  pd.read_json(user_profile)
-
-  
-
-    print(user_profile)
-    print(diets_matrix_factorization)
-
-    
-
-    diets_matrix_factorization.columns = diets_matrix_factorization.columns.str.replace(' ', '')
-    diets_matrix_factorization[['protein','carbs','fats']] = diets_matrix_factorization[['protein','carbs','fats']].astype(float)
-
-  
-
-    diets_recommender = diets_matrix_factorization.copy()
-
-    diets_recommender.drop(['title', 'dietID'], axis=1, inplace=True)
-    diets_matrix_factorization.drop(['title', 'dietID'], axis=1, inplace=True)
-
-    print("*****just before error******")
-    print(user_profile)
-    print(diets_matrix_factorization)
-
-
-    generated_user_intrests = diets_matrix_factorization.T.dot(user_profile.rating) 
-
-    result_recommendations = (diets_recommender.dot(generated_user_intrests)) / generated_user_intrests.sum() 
+    return user_profile
 
 
 
-    macro_predictions = {
-    "protein_prediction": 0.0,
-    "carbs_prediction": 0.0,
-    "fats_prediction ": 0.0
-    }
-
-
-
-    activity_level_prediction = generated_user_intrests.iloc[3]/15
-
-    i = 0
-    for key in macro_predictions:
-        macro_predictions[key]  = round(generated_user_intrests.iloc[i]/ (generated_user_intrests.sum() - generated_user_intrests.iloc[3]), 2)
-        i = i+1
-        
-
-        
-
-    print(generated_user_intrests)
-
-    print("Ratio of Macros")
-    print("p:",  list(macro_predictions.values())[0])
-    print("c:",  list(macro_predictions.values())[1])
-    print("f:",  list(macro_predictions.values())[2])
-
-    print(activity_level_prediction)
 
 
 
