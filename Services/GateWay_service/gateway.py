@@ -7,7 +7,11 @@ from .generate_meal_plan_rpc import generate_meal_plan_rpc
 
 from flask import Flask, request
 
-
+"""
+This is file responsible for defining all the API
+endpoints. It is the webserver and therefore the 
+gateway to the application.
+"""
 import pika
 
 app = Flask(__name__)
@@ -17,34 +21,48 @@ def login_rpc_call():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        print(email, password)
+
 
         return(login_rpc().call(email, password))
+
 
     return("login failed")
 
     
+
 @app.route('/login/forgotpassword',methods=['POST'])
 def forgot_password_rpc_call():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        print(email, password)
+
 
         return(login_rpc().forgot_password(email, password))
 
+
+
     return("login failed")
+
+
 
 @app.route('/signup',methods=['POST'])
 def sign_up_rpc_call():
       email = request.form.get('email')
       password = request.form.get('password')
+
+
       return(sign_up_rpc().sign_up(email,password))
      
+
+
 @app.route('/userexists', methods=['POST'])
 def uses_exists_rpc_call():
     user_id = request.form.get('user_id')
+
+
     return(user_profile_rpc().user_exists(user_id))
+
+
 
 @app.route('/createuserprofile', methods=['Post'])
 def create_user_profile_rpc_call():
@@ -55,15 +73,25 @@ def create_user_profile_rpc_call():
         allergies =  request.form.get('allergies')
         age =  request.form.get('age')
         dietray_options =  request.form.get('dietray_options')
-        
+
+
         return(user_profile_rpc().create_user_profile(user_id, height, weight, activity_level, allergies, age,dietray_options))
+
+
 
 @app.route('/generatemealplan', methods=['Post'])
 def generate_meal_plan_rpc_call():
       user_id =  request.form.get('user_id')
+
+
       return(generate_meal_plan_rpc().generate_meal_plan_rpc(user_id))
     #set FLASK_APP=gateway.py
     #$env:FLASK_APP = "gateway.py"
     #flask run
 
       #set FLASK_APP=gateway && $env:FLASK_APP = "gateway.py" && flask run
+
+@app.route('/generateexerciseplan', methods=['Post']):
+def generate_exercise_plan_rpc_call():
+    user_id =  request.form.get('user_id')
+    return()

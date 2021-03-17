@@ -57,9 +57,16 @@ def on_request_create_user_profile(ch, method, props, body):
 
 
 
-"""
-React app calls this first to determine what page to render 
-"""
+
+'''
+This method is responisbe for checking to see if a user profile exists
+if so it returns an acknowledgement message if no proifle is found for 
+the given ID an empty profile is created.
+
+@Params: String user ID
+
+@returns string result.
+'''
 def user_profile_exist(user_id):
     #database connection
     connection = pymysql.connect(host="localhost",user="root",passwd="",database="user_profiles" )
@@ -77,6 +84,8 @@ def user_profile_exist(user_id):
             cursor.execute("INSERT INTO user_profiles (user_id) VALUES (%s)", (user_id))
                 # cursor.execute("INSERT INTO user_profiles VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", (user_id))
         except:
+
+
             return("failed to create profile")
        
 
@@ -84,10 +93,22 @@ def user_profile_exist(user_id):
         connection.commit()
         connection.close()
 
+
         return("profile created")
     connection.close()
-    return("profile already exits")
 
+
+    return("profile already exits")
+  
+'''
+This method is responisbe for inserting values into a given
+user profile. The previous function must be ran in order for 
+this function to populate the row. 
+
+@Params: String user_id, height,weight,activity_level,allergies,age,dietray_options 
+
+@returns string result 
+'''
 def create_user_profile(user_id, height,weight,activity_level,allergies,age,dietray_options):
     bmi = calcualte_bmi(height,weight)
    
@@ -103,6 +124,8 @@ def create_user_profile(user_id, height,weight,activity_level,allergies,age,diet
         cursor.execute("UPDATE user_profiles SET height = %s , weight = %s, bmi = %s, activity_level = %s, dietary_options = %s, allergies = %s, age = %s WHERE user_id = %s",(
         height,weight,bmi,activity_level,dietray_options,allergies,age,user_id))
     except:
+
+
         return("failed to populate user profile")
     
 
@@ -114,13 +137,32 @@ def create_user_profile(user_id, height,weight,activity_level,allergies,age,diet
 
     return("updated profile")
 
+
+'''
+This method is responisbe for getting a generatating
+the BMI for a given user. The users height is formatted
+from a centemeters to meters.
+
+@Params: String height and weight.
+
+@returns integer BMI Value.
+'''
 def calcualte_bmi(height,weight):
-    height = int(height)
+    height = float(height) /100
     weight = int(weight)
 
-    return weight/(height**2) 
+
+    return int(weight/(height**2))
 
 
+'''
+This method is responisbe for getting a user profile given an ID
+the retrieved user profile is returned.
+
+@Params: String user_Id
+
+@returns user_profile
+'''
 def get_user_profile(user_id):
     #database connection
     connection = pymysql.connect(host="localhost",user="root",passwd="",database="user_profiles" )
@@ -129,12 +171,14 @@ def get_user_profile(user_id):
     print("here",user_id)
     sql = "SELECT * FROM user_profiles WHERE user_id =%s"
     cursor.execute(sql,user_id)
-    result = cursor.fetchone()
+    user_profile = cursor.fetchone()
    
-    print(result,"before being sent back")
+ 
+    return(user_profile)
 
-    return(result)
-
+"""
+Make service open to recieve requests.
+"""
 channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue='user_exits_rpc_queue', on_message_callback=on_request_user_exists)
 channel.basic_consume(queue='create_user_profile_rpc_queue', on_message_callback=on_request_create_user_profile)

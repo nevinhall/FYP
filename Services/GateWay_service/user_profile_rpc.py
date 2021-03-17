@@ -3,7 +3,10 @@ import pika
 import uuid
 import json
 
-
+"""
+This class acts as en entry point for all functionality relating to 
+the user profile.
+"""
 class user_profile_rpc(object):
 
     def __init__(self):

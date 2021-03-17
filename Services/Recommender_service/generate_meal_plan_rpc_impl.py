@@ -1,5 +1,4 @@
 
-
 import re
 import pika
 import json
@@ -13,7 +12,9 @@ import Create_meal_plan_weights
 
 
 
-
+"""
+Setup neccessary communication for rabbitMQ
+"""
 connection = pika.BlockingConnection(
     pika.ConnectionParameters('localhost'))
 
@@ -23,12 +24,20 @@ channel.queue_declare(queue='generate_meal_meal_rpc_queue')
 channel.queue_declare(queue='get_user_profile_rpc_queue')
 
 
+
+"""
+Service driver code, Once the user makes the request to 
+generate a meal plan the system first retrieves the users details
+onece this has been completed the data is normailsied.
+The function then creates the macro ratios for the given user profile
+
+@returns: completed meal plan
+"""
 def on_request_retrieve_user_details(ch, method, props, body):
-    print("on_request_retrieve_user_details", body)
 
     user_profile = retrieve_user_details(body)
-    user_profile = normalise_data(user_profile)
-    user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile)
+    user_profile_normalised = normalise_data(user_profile)
+    user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile_normalised)
     response = Create_meal_plan_weights.Create_meal_plan_weights().combinatorial_optimisation(user_profile_weights)
 
     
@@ -41,18 +50,33 @@ def on_request_retrieve_user_details(ch, method, props, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
+"""
+This code is responsible for communicating with the user service
+the function retrieves a user profile for the given ID.
 
+@params: string user_id.
+@returns: user profile.
+"""
 def retrieve_user_details(user_id):
     user_profile = rpc_call.rpc_call().get_user_profile(user_id)
-    print("This is the user profile", user_profile)
+
+
     return user_profile
 
+"""
+This responsible for normalising the data for use in the recommender system.
+This achieved by determing a rating for each of the diet plan types.
 
-def normalise_data(response):
-    print("reponse in gen meal plan") 
-    user_profile = response.decode()
+@params: user_porfile this the user profile that requires normalising.
+@return: user_profile_converted JSON string containg ratings for each diet type.
+
+"""
+def normalise_data(user_profile):
+
+    user_profile = user_profile.decode()
 
     user_profile = user_profile.strip().replace('\'','').replace(',','').replace('(','').replace(')','').split()
+    print("just before error", user_profile)
     user_id =  user_profile[0]
     height = user_profile[1]
     weight =user_profile[2]
@@ -100,20 +124,23 @@ def normalise_data(response):
     print("weight_gain", weight_gain)
     print("weight_lose", weight_lose)
 
-    user_id =1
-    user_profile = {"userID":{"0":user_id,"1":user_id,"2":user_id},"title":{"0":"weight lose","1":"weight gain","2":"maintaince"},"dietID":{"0":0,"1":1,"2":2},"rating":{"0":weight_lose,"1":weight_gain,"2":weight_maintaince}}
-    # [{"userID":1,"title":"weight loss","dietID":0,"rating":0},{"userID":1,"title":"weight gain","dietID":2,"rating":5},{"userID":1,"title":"maintaince ","dietID":4,"rating":0}]
-    user_profile =  json.dumps(user_profile)
+    """
+    Prep the data for use in the recommneder system, convert to json.
+    """
+    user_profile_converted = {"userID":{"0":user_id,"1":user_id,"2":user_id},"title":{"0":"weight lose","1":"weight gain","2":"maintaince"},"dietID":{"0":0,"1":1,"2":2},"rating":{"0":weight_lose,"1":weight_gain,"2":weight_maintaince}}
+    user_profile_converted =  json.dumps( user_profile_converted )
     
-    print(user_profile)
-
-    return user_profile
 
 
+    return  user_profile_converted
 
 
 
 
+
+"""
+Make service open to recieve requests.
+"""
 channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue='generate_meal_meal_rpc_queue', on_message_callback=on_request_retrieve_user_details)
 

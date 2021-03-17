@@ -3,6 +3,10 @@ import pika
 import uuid
 import json
 
+"""
+This class acts as en entry point for all functionality relating to 
+loging up.
+"""
 class login_rpc(object):
 
     def __init__(self):

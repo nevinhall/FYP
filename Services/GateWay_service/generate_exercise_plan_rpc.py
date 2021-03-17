@@ -3,11 +3,12 @@ import pika
 import uuid
 import json
 
+
 """
 This class acts as en entry point for all functionality relating to 
-the generate meal plan service.
+the generate exercise plan service.
 """
-class generate_meal_plan_rpc(object):
+class generate_exercise_plan_rpc(object):
 
     def __init__(self):
         self.connection = pika.BlockingConnection(
@@ -27,13 +28,13 @@ class generate_meal_plan_rpc(object):
         if self.corr_id == props.correlation_id:
             self.response = body
 
-    def generate_meal_plan_rpc(self, user_id):
+    def generate_exercise_plan_rpc(self, user_id):
 
         self.response = None
         self.corr_id = str(uuid.uuid4())
         self.channel.basic_publish(
             exchange='',
-            routing_key='generate_meal_meal_rpc_queue',
+            routing_key='generate_exercise_plan_rpc_queue',
             properties=pika.BasicProperties(
                 reply_to=self.callback_queue,
                 correlation_id=self.corr_id,
