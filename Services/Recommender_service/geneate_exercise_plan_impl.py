@@ -1,4 +1,4 @@
-
+from pymongo import MongoClient
 import re
 import pika
 import json
@@ -6,10 +6,12 @@ import pymysql
 from validate_email import validate_email
 import uuid
 import io
+import random
 import pandas as pd
 import rpc_call
 import Create_meal_plan_weights
 import prep_data
+
 
 
 """
@@ -20,7 +22,7 @@ connection = pika.BlockingConnection(
 
 channel = connection.channel()
 
-channel.queue_declare(queue='generate_meal_meal_rpc_queue')
+channel.queue_declare(queue='generate_exercise_plan_rpc_queue')
 channel.queue_declare(queue='get_user_profile_rpc_queue')
 
 
@@ -38,7 +40,8 @@ def on_request_retrieve_user_details(ch, method, props, body):
     user_profile = retrieve_user_details(body)
     user_profile_normalised = prep_data.normalise_data(user_profile)
     user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile_normalised)
-    response = Create_meal_plan_weights.Create_meal_plan_weights().combinatorial_optimisation(user_profile_weights)
+    response = generate_exercise_plan(user_profile_weights)
+
 
     
     
@@ -63,15 +66,62 @@ def retrieve_user_details(user_id):
 
     return user_profile
 
+def retrieve_workouts(user_profile_weights):
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    db = client.workouts
+
+    workouts_cardio = []
+    workouts_strength = []
+  
+    """
+    Retrive documents for the different exercise types
+    """
+    for workout in db.workout.find({'type': 'cardio'}):
+        workouts_cardio.append(workout)
+
+    for workout in db.workout.find({'type': 'strength'}):
+        workouts_strength.append(workout)
 
 
 
+    return(workouts_cardio,workouts_strength)
 
+"""
+
+"""
+def generate_exercise_plan(user_profile_weights):
+    user_workout_plan = []
+    workouts_cardio,workouts_strength = retrieve_workouts(user_profile_weights)
+ 
+
+    if user_profile_weights[1] == "weight gain":
+       user_workout_plan.append(random.sample(workouts_strength, 2))
+       user_workout_plan.append(random.choice(workouts_cardio))
+
+
+       return user_workout_plan
+
+
+
+    if user_profile_weights[1] == "weight lose":
+          user_workout_plan.append(random.sample(workouts_cardio, 2))
+          user_workout_plan.append(random.choice(workouts_strength))
+          
+
+          return user_workout_plan
+
+    #develop futher
+    # else:
+    #       user_workout_plan.append(random.sample(group_of_items, num_to_select))
+    #       user_workout_plan.append(random.choice(foo))
+
+
+        
 """
 Make service open to recieve requests.
 """
 channel.basic_qos(prefetch_count=1)
-channel.basic_consume(queue='generate_meal_meal_rpc_queue', on_message_callback=on_request_retrieve_user_details)
+channel.basic_consume(queue='generate_exercise_plan_rpc_queue', on_message_callback=on_request_retrieve_user_details)
 
 print(" GenMealPlan Awaiting RPC requests")
 channel.start_consuming()

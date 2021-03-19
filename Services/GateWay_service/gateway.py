@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from .generate_exercise_plan_rpc import generate_exercise_plan_rpc
 import re
 from .user_profile_rpc import user_profile_rpc
 from .login_rpc import login_rpc
@@ -91,7 +92,7 @@ def generate_meal_plan_rpc_call():
 
       #set FLASK_APP=gateway && $env:FLASK_APP = "gateway.py" && flask run
 
-@app.route('/generateexerciseplan', methods=['Post']):
+@app.route('/generateexerciseplan', methods=['Post'])
 def generate_exercise_plan_rpc_call():
     user_id =  request.form.get('user_id')
-    return()
+    return(generate_exercise_plan_rpc().generate_exercise_plan_rpc(user_id))

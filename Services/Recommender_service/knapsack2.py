@@ -1,6 +1,7 @@
+import numpy as np
+
 def solve_knapsack(profits, weights, capacity):
-    saved_ids = []
-    n = len(profits)
+    n = len(profits) 
     if capacity <= 0 or n == 0 or len(weights) != n:
         return 0
     
@@ -14,43 +15,33 @@ def solve_knapsack(profits, weights, capacity):
     for c in range(0, capacity+1):
         if weights[0] <= c:
             dp[0][c] = profits[0]
-     
-           
     
     for i in range(1, n):
-      
         for c in range(1, capacity+1):
             profit1, profit2 = 0, 0
             if weights[i] <= c:
                 profit1 = profits[i] + dp[i-1][c-weights[i]]
-            profit2 = dp[i][c]
-
-           
+            profit2 = dp[i-1][c]
             dp[i][c] = max(profit1, profit2)
 
-       
-            # print(weights[i])
-        
-        print(dp[i-1][c-1])
-        # saved_ids = 
+    col = capacity 
+
+    for row in range(n-1,0,-1):
+        if( dp[row][col] !=  dp[row-1][col]):
+            # print(dp[row][col] , '!=',  dp[row-1][col])
+            print("Value added",profits[row])
+            col =  col - weights[row]
+            print("New Backpack weight", col)
+
+    print(dp[0][capacity])
     
     # maximum profit will be at the bottom-right corner.
-
-    print(dp)
+    print(np.matrix(dp))
     return dp[n-1][capacity]
-
-
-
-# ids= ["id1","id2","id3","id4"]
-# val = [60, 100, 120,110]
-# wt = [10, 20, 30,5]
-# total_cals = 50
-# n = len(val)
-
 items = ["A","B","C","D"]
 weights = [2,3,1,4]
-profits = [4,5,3,7]
+profits = [100,5,3,7]
 
-capacity = 5
+capacity = 150
 print(solve_knapsack(profits, weights, capacity))
 
