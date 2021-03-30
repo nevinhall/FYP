@@ -12,6 +12,21 @@ channel = connection.channel()
 channel.queue_declare(queue='user_exits_rpc_queue')
 channel.queue_declare(queue='create_user_profile_rpc_queue')
 channel.queue_declare(queue='get_user_profile_rpc_queue')
+channel.queue_declare(queue='del_user_profile_rpc_queue')
+
+
+def on_request_del_user_profile(ch, method, props, body):
+    print(body)
+
+    response = del_user_profile(body)
+
+    ch.basic_publish(exchange='',
+                     routing_key=props.reply_to,
+                     properties=pika.BasicProperties(correlation_id = \
+                                                         props.correlation_id),
+                     body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
 
 
 def on_request_get_user_profile(ch, method, props, body):
@@ -55,7 +70,32 @@ def on_request_create_user_profile(ch, method, props, body):
                      body=str(response))
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
+'''
+This method is responisbe for checking to see if a user profile exists
+if so it returns an acknowledgement message if no proifle is found for 
+the given ID an empty profile is created.
 
+@Params: String user ID
+
+@returns string result.
+'''
+def del_user_profile(user_id):
+    #database connection
+    connection = pymysql.connect(host="localhost",user="root",passwd="",database="user_profiles" )
+    cursor = connection.cursor()
+
+    sql = "DELETE user_id FROM user_profiles WHERE user_id =%s"
+    cursor.execute(sql,user_id)
+    result = cursor.fetchone()
+    print(result)
+
+    #commiting the connection then closing it.
+    connection.commit()
+    connection.close()
+
+
+    return("delete failed")
+  
 
 
 '''
@@ -183,6 +223,7 @@ channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue='user_exits_rpc_queue', on_message_callback=on_request_user_exists)
 channel.basic_consume(queue='create_user_profile_rpc_queue', on_message_callback=on_request_create_user_profile)
 channel.basic_consume(queue='get_user_profile_rpc_queue', on_message_callback=on_request_get_user_profile)
+channel.basic_consume(queue='del_user_profile_rpc_queue', on_message_callback=on_request_del_user_profile)
 
 
 

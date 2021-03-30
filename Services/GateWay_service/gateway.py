@@ -65,6 +65,16 @@ def uses_exists_rpc_call():
 
 
 
+@app.route('/deluser', methods=['POST'])
+def del_user_rpc_call():
+    user_id = request.form.get('user_id')
+
+
+    return(user_profile_rpc().del_user(user_id))
+
+
+
+
 @app.route('/createuserprofile', methods=['Post'])
 def create_user_profile_rpc_call():
         user_id =  request.form.get('user_id')

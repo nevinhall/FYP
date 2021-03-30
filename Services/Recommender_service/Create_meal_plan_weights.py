@@ -84,5 +84,5 @@ class Create_meal_plan_weights():
 
         
       
-        return("soon a meal plan will be created with a preference on", nutritional_preference,predictions[1])
+        return("soon a meal plan will be created with a preference on", nutritional_preference,predictions[1],predictions)
     
