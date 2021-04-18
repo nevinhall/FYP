@@ -77,10 +77,10 @@ def retrieve_user_details(user_id):
 def write_meal_plan_to_database(mealplan,user_id):
     client = MongoClient('mongodb://127.0.0.1:27017')
     db =client.meal
-    #db[f"{user_id}"].drop()
-    db[f"{user_id}"].insert_one({"inUse":0,"favourited":0,"mealplan":mealplan})
+    db[f"{user_id}"].drop()
+    db[f"{user_id}"].insert_one({"ID":str(uuid.uuid4()),"inUse":1,"favourited":0,"mealplan":mealplan})
 
-    print(db[f"{user_id}"].find_one())
+    
 
 
 

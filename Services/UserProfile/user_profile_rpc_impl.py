@@ -3,6 +3,7 @@ import pika
 import json
 import pymysql
 from validate_email import validate_email
+from pymongo import MongoClient
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters('localhost'))
@@ -13,6 +14,14 @@ channel.queue_declare(queue='user_exits_rpc_queue')
 channel.queue_declare(queue='create_user_profile_rpc_queue')
 channel.queue_declare(queue='get_user_profile_rpc_queue')
 channel.queue_declare(queue='del_user_profile_rpc_queue')
+channel.queue_declare(queue='get_user_meal_plan_rpc_queue')
+channel.queue_declare(queue='get_user_exercise_plan_rpc_queue')
+channel.queue_declare(queue='set_current_user_exercise_plan_rpc_queue')
+channel.queue_declare(queue='set_current_user_meal_plan_rpc_queue')
+channel.queue_declare(queue='get_current_user_meal_plan_rpc_queue')
+channel.queue_declare(queue='get_current_user_exercise_plan_rpc_queue')
+
+
 
 
 def on_request_del_user_profile(ch, method, props, body):
@@ -30,6 +39,109 @@ def on_request_del_user_profile(ch, method, props, body):
 
 
 def on_request_get_user_profile(ch, method, props, body):
+    print(body)
+
+    response = get_user_profile(body)
+
+    ch.basic_publish(exchange='',
+                     routing_key=props.reply_to,
+                     properties=pika.BasicProperties(correlation_id = \
+                                                         props.correlation_id),
+                     body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+
+
+def on_request_get_user_meal_plan(ch, method, props, body):
+    print(body)
+
+    response = get_user_meal_plan(body)
+
+    ch.basic_publish(exchange='',
+                     routing_key=props.reply_to,
+                     properties=pika.BasicProperties(correlation_id = \
+                                                         props.correlation_id),
+                     body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+
+
+def on_request_get_user_exercise_plan(ch, method, props, body):
+    print(body)
+
+    response = get_user_exercise_plan(body)
+
+    ch.basic_publish(exchange='',
+                        routing_key=props.reply_to,
+                        properties=pika.BasicProperties(correlation_id = \
+                                                            props.correlation_id),
+                        body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+
+
+def on_request_set_current_user_exercise_plan(ch, method, props, body):
+    body = json.loads(body)
+    user_id = body['user_id']
+    exercise_plan_id = body['exercise_plan_id']
+    
+    response = set_current_user_exercise_plan(user_id,exercise_plan_id)
+
+    ch.basic_publish(exchange='',
+                        routing_key=props.reply_to,
+                        properties=pika.BasicProperties(correlation_id = \
+                                                            props.correlation_id),
+                        body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+
+
+
+def on_request_set_current_user_meal_plan(ch, method, props, body):
+    body = json.loads(body)
+    user_id = body['user_id']
+    meal_plan_id = body['meal_plan_id']
+
+    response = set_current_user_meal_plan(user_id,meal_plan_id)
+
+    ch.basic_publish(exchange='',
+                        routing_key=props.reply_to,
+                        properties=pika.BasicProperties(correlation_id = \
+                                                            props.correlation_id),
+                        body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+
+
+
+def on_request_get_current_user_exercise_plan(ch, method, props, body):
+
+    response = get_current_user_exercise_plan(body)
+
+    ch.basic_publish(exchange='',
+                        routing_key=props.reply_to,
+                        properties=pika.BasicProperties(correlation_id = \
+                                                            props.correlation_id),
+                        body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+
+
+
+def on_request_get_current_user_meal_plan(ch, method, props, body):
+
+
+    response = get_current_user_meal_plan(body)
+
+    ch.basic_publish(exchange='',
+                        routing_key=props.reply_to,
+                        properties=pika.BasicProperties(correlation_id = \
+                                                            props.correlation_id),
+                        body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+
+def on_request_get_user(ch, method, props, body):
     print(body)
 
     response = get_user_profile(body)
@@ -150,9 +262,19 @@ this function to populate the row.
 @returns string result 
 '''
 def create_user_profile(user_id, height,weight,activity_level,allergies,age,dietray_options):
+
+    print(user_id)
+    print(height)
+    print(weight)
+    print(activity_level)
+    print(allergies)
+    print(age)
+    print(dietray_options)
+
+ 
+
     bmi = calcualte_bmi(height,weight)
    
-    
     #database connection
     connection = pymysql.connect(host="localhost",user="root",passwd="",database="user_profiles" )
     cursor = connection.cursor()
@@ -188,6 +310,7 @@ from a centemeters to meters.
 @returns integer BMI Value.
 '''
 def calcualte_bmi(height,weight):
+    print("weight",weight)
     height = float(height) /100
     weight = int(weight)
 
@@ -216,6 +339,96 @@ def get_user_profile(user_id):
  
     return(user_profile)
 
+
+
+
+def get_user_meal_plan(user_id):
+    print("getting meal plan")
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    db =client.meal
+ 
+    user_meal_plans = []
+    for meal_plan in db[f"{user_id}"].find():
+        user_meal_plans.append(meal_plan)
+        
+    return(user_meal_plans)
+
+
+
+def get_user_exercise_plan(user_id):
+    user_workouts = []
+    print("getting all exercise plan") 
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    db = client.workouts
+    
+    for workout_plan in db[f"{user_id}"].find():
+        user_workouts.append(workout_plan)
+        
+    return(user_workouts)
+
+
+
+def get_current_user_meal_plan(user_id):
+    print("getting meal plan")
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    db =client.meal
+ 
+    return(db[f"{user_id}"].find_one({"inUse": {"$eq":1}}))
+
+
+
+
+def get_current_user_exercise_plan(user_id):
+    print("getting exercise plan current") 
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    db = client.workouts
+    
+
+    return(db[f"{user_id}"].find_one({"inUse": {"$eq":1}}))
+
+
+
+
+def set_current_user_meal_plan(user_id,meal_plan_id):
+    print("getting meal plan")
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    db =client.meal
+ 
+    myquery = { "inUse": 1}
+    newvalues = { "$set": {"inUse": 0} }
+
+    db[f"{user_id}"].update_one(myquery, newvalues)
+    
+
+    myquery = { "ID":meal_plan_id}
+    newvalues = { "$set": {"inUse": 1} }
+
+    db[f"{user_id}"].update_one(myquery, newvalues)
+
+
+    return()
+
+
+
+
+def set_current_user_exercise_plan(user_id,exercise_plan_id):
+    print("getting exercise plan") 
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    db = client.workouts
+
+    myquery = { "inUse": 1}
+    newvalues = { "$set": {"inUse": 0} }
+
+    db[f"{user_id}"].update_one(myquery, newvalues)
+
+    myquery = { "ID": exercise_plan_id}
+    newvalues = { "$set": {"inUse": 1} }
+
+
+    return(db[f"{user_id}"].update_one(myquery, newvalues))
+
+
+
 """
 Make service open to recieve requests.
 """
@@ -224,6 +437,12 @@ channel.basic_consume(queue='user_exits_rpc_queue', on_message_callback=on_reque
 channel.basic_consume(queue='create_user_profile_rpc_queue', on_message_callback=on_request_create_user_profile)
 channel.basic_consume(queue='get_user_profile_rpc_queue', on_message_callback=on_request_get_user_profile)
 channel.basic_consume(queue='del_user_profile_rpc_queue', on_message_callback=on_request_del_user_profile)
+channel.basic_consume(queue='get_user_meal_plan_rpc_queue', on_message_callback=on_request_get_user_meal_plan)
+channel.basic_consume(queue='get_user_exercise_plan_rpc_queue', on_message_callback=on_request_get_user_exercise_plan)
+channel.basic_consume(queue='set_current_user_meal_plan_rpc_queue', on_message_callback=on_request_set_current_user_meal_plan)
+channel.basic_consume(queue='set_current_user_exercise_plan_rpc_queue', on_message_callback=on_request_set_current_user_exercise_plan)
+channel.basic_consume(queue='get_current_user_meal_plan_rpc_queue', on_message_callback=on_request_get_current_user_meal_plan)
+channel.basic_consume(queue='get_current_user_exercise_plan_rpc_queue', on_message_callback=on_request_get_current_user_exercise_plan)
 
 
 

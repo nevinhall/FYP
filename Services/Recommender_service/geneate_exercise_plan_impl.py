@@ -9,7 +9,7 @@ import io
 import random
 import pandas as pd
 import rpc_call
-import Create_meal_plan_weights
+from recommender_system import Create_meal_plan_weights
 import prep_data
 
 
@@ -41,7 +41,7 @@ def on_request_retrieve_user_details(ch, method, props, body):
     user_profile_normalised = prep_data.normalise_data(user_profile)
     user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile_normalised)
     response = generate_exercise_plan(user_profile_weights)
-
+    write_exercise_plan_to_database(response,body)
 
     
     
@@ -116,6 +116,15 @@ def generate_exercise_plan(user_profile_weights):
     #       user_workout_plan.append(random.choice(foo))
 
 
+def write_exercise_plan_to_database(exercise_plan,user_id):
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    db = client.workouts
+    # db[f"{user_id}"].drop()
+    db[f"{user_id}"].insert_one({"ID":str(uuid.uuid4()),"inUse":1,"favourited":0,"exercise_plan":exercise_plan})
+
+    print(db[f"{user_id}"].find_one())
+
+
         
 """
 Make service open to recieve requests.
@@ -123,7 +132,7 @@ Make service open to recieve requests.
 channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue='generate_exercise_plan_rpc_queue', on_message_callback=on_request_retrieve_user_details)
 
-print(" GenMealPlan Awaiting RPC requests")
+print(" GenExerciselPlan Awaiting RPC requests")
 channel.start_consuming()
 
 

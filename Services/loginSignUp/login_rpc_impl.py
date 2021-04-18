@@ -22,9 +22,9 @@ def login(email,password):
         cursor.execute(sql,email)
         result = cursor.fetchall()
 
-
-        return(result)
-    return("login failed")
+ 
+        return(result[0][0])
+    return("failure")
 
 
 def valid_email(email):

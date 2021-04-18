@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from pika.spec import methods
 from .generate_exercise_plan_rpc import generate_exercise_plan_rpc
 import re
 from .user_profile_rpc import user_profile_rpc
@@ -6,7 +7,9 @@ from .login_rpc import login_rpc
 from.sign_up_rpc import sign_up_rpc
 from .generate_meal_plan_rpc import generate_meal_plan_rpc
 
+
 from flask import Flask, request
+from flask_cors import CORS
 
 """
 This is file responsible for defining all the API
@@ -16,6 +19,7 @@ gateway to the application.
 import pika
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/login',methods=['POST'])
 def login_rpc_call():
@@ -23,11 +27,10 @@ def login_rpc_call():
         email = request.form.get('email')
         password = request.form.get('password')
 
-
         return(login_rpc().call(email, password))
 
 
-    return("login failed")
+    return("failure")
 
     
 
@@ -45,14 +48,21 @@ def forgot_password_rpc_call():
     return("login failed")
 
 
+@app.route("/getuserprofile",methods=['POST'])
+def get_user_profile_rpc_call():
+    uuid =  request.form.get('user_id')
+
+    return user_profile_rpc().get_user_profile(uuid)
+
+
 
 @app.route('/signup',methods=['POST'])
 def sign_up_rpc_call():
-      email = request.form.get('email')
-      password = request.form.get('password')
+    email = request.form.get('email')
+    password = request.form.get('password')
 
-
-      return(sign_up_rpc().sign_up(email,password))
+ 
+    return(sign_up_rpc().sign_up(email,password))
      
 
 
@@ -85,7 +95,6 @@ def create_user_profile_rpc_call():
         age =  request.form.get('age')
         dietray_options =  request.form.get('dietray_options')
 
-
         return(user_profile_rpc().create_user_profile(user_id, height, weight, activity_level, allergies, age,dietray_options))
 
 
@@ -106,3 +115,38 @@ def generate_meal_plan_rpc_call():
 def generate_exercise_plan_rpc_call():
     user_id =  request.form.get('user_id')
     return(generate_exercise_plan_rpc().generate_exercise_plan_rpc(user_id))
+
+@app.route('/get_exercise_plan', methods=['Post'])
+def get_exercise_plan_rpc_call():
+    user_id = request.form.get('user_id')
+    return(user_profile_rpc().get_user_exercise_plan(user_id))
+
+
+@app.route('/get_meal_plan', methods=['Post'])
+def get_meal_plan_rpc_call():
+    user_id = request.form.get('user_id')
+    return(user_profile_rpc().get_user_meal_plan(user_id))
+
+
+@app.route('/set_current_user_exercise_plan', methods=['Post'])
+def set_current_user_exercise_plan_rpc_call():
+    user_id = request.form.get('user_id')
+    exercise_plan_id =request.form.get('exercise_plan_id')
+
+
+    return(user_profile_rpc().set_user_current_exercise_plan(user_id,exercise_plan_id))
+
+
+
+@app.route('/get_user_current_meal_plan', methods=['Post'])
+def get_user_current_meal_plan_rpc_call():
+    user_id = request.form.get('user_id')
+  
+    return(user_profile_rpc().get_user_current_meal_plan(user_id))
+
+
+@app.route('/get_user_current_exercise_plan', methods=['Post'])
+def get_user_current_exercise_plan_rpc_call():
+    user_id = request.form.get('user_id')
+  
+    return(user_profile_rpc().get_user_current_exercise_plan(user_id))

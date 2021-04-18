@@ -17,7 +17,7 @@ def valid_email(email):
 
 
 def sign_up(user_id,email,password):
- 
+    print("hitting sign up")
     if(valid_email(email)):
    
 
@@ -31,7 +31,7 @@ def sign_up(user_id,email,password):
         try:
             cursor.execute("INSERT INTO users VALUES (%s, %s, %s)", (user_id, email, password))
         except:
-            return("failed to sign up")
+            return("failure")
        
 
         #commiting the connection then closing it.
@@ -41,7 +41,7 @@ def sign_up(user_id,email,password):
         
 
        
-    return("sign up succesful")
+    return("success")
     
 
 def valid_email(email):
