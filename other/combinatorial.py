@@ -6,7 +6,7 @@ from numpy import random
 import numpy as np
 from pymongo.common import validate_driver_or_none
 
-class Combinatorial_algorithm():
+class Combinatorail_alogrithm():
   
     """
     Diver code.
@@ -45,17 +45,16 @@ class Combinatorial_algorithm():
 
         if diet_restrictions != "null":
                 for meal in self.db.meals.find({"$and":[{macro: {"$gte": macro_avg}},{"Category": {"$eq":"Vegetarian"}}]}):
-                    meals.append(meal)
                     meals_ids.append(meal['idMeal'])
                     meal_calories.append(meal['calories'])
                     meal_macro_preference.append(meal[macro])
 
-        else:
-            for meal in self.db.meals.find({macro: {"$gte": macro_avg}}):
-                meals.append(meal)
-                meals_ids.append(meal['idMeal'])
-                meal_calories.append(meal['calories'])
-                meal_macro_preference.append(meal[macro])
+
+        for meal in self.db.meals.find({macro: {"$gte": macro_avg}}):
+            meals.append(meal)
+            meals_ids.append(meal['idMeal'])
+            meal_calories.append(meal['calories'])
+            meal_macro_preference.append(meal[macro])
 
 
         return meals, meals_ids,meal_calories ,meal_macro_preference
@@ -73,7 +72,7 @@ class Combinatorial_algorithm():
         includes_meal_ids = []
         n = len(nutritional_preference_value) 
         if total_calories <= 0 or n == 0 or len(meal_calories) != n:
-            return []
+            return 0
         
         dp = [[0 for x in range(total_calories+1)] for y in range(n)]
         
@@ -100,9 +99,9 @@ class Combinatorial_algorithm():
             if( dp[row][col] !=  dp[row-1][col]):
                 # print(dp[row][col] , '!=',  dp[row-1][col])
                 includes_meal_ids.append(macro_heavy_meal_ids[row])
-                # print("Value added",nutritional_preference_value[row])
+                print("Value added",nutritional_preference_value[row])
                 col =  col - meal_calories[row]
-                # print("New Backpack weight", col)
+                print("New Backpack weight", col)
 
 
         print(dp[0][total_calories])
@@ -122,11 +121,16 @@ class Combinatorial_algorithm():
     @return: Array meals,meals_ids, Array meals_calories, Array meal_macro_preferences  
     """
     def shuffle_arrays(self,meals,meals_ids, meals_calories, meal_macro_preferences):
+        print("m",len(meals))
+        print("mi",len(meals_ids))
+        print("mc",len(meals_calories))
+        print("mmp",len(meal_macro_preferences))
         print("************************")
         indexes =random.randint((len(meals)), size=(int(len(meals)/2)))
         indexes = list(dict.fromkeys(indexes))
 
         for index in sorted(indexes, reverse=True):
+            print("index:", index)
             del meals[index]
             del meals_ids[index]
             del meals_calories[index]
@@ -149,6 +153,8 @@ class Combinatorial_algorithm():
 
 
 
+
+
     def create_meal_plan(self,is_Optimal,user_profile_weights, total_calories):
         meal_plan = []
         for key in user_profile_weights:
@@ -158,8 +164,11 @@ class Combinatorial_algorithm():
             print(key,calorie_ratio)
 
             if(not is_Optimal):
+                print("protein shuffle")
                 self.protein_heavy_meal, self.protein_heavy_meal_ids, self.protein_heavy_meal_calories, self.protein_heavy_meal_macro_preference  = self.shuffle_arrays(self.protein_heavy_meal, self.protein_heavy_meal_ids, self.protein_heavy_meal_calories, self.protein_heavy_meal_macro_preference )
+                print("carbs shuffle")
                 self.carb_heavy_meal, self.carb_heavy_meal_ids, self.carb_heavy_meal_calories, self.carb_heavy_meal_macro_preference= self.shuffle_arrays(self.carb_heavy_meal, self.carb_heavy_meal_ids, self.carb_heavy_meal_calories, self.carb_heavy_meal_macro_preference)
+                print("fat shuffle")
                 self.fats_heavy_meal, self.fats_heavy_meal_ids,self.fats_heavy_meal_calories ,self.fats_heavy_meal_macro_preference= self.shuffle_arrays(self.fats_heavy_meal, self.fats_heavy_meal_ids,self.fats_heavy_meal_calories ,self.fats_heavy_meal_macro_preference)
                 
             
@@ -176,4 +185,16 @@ class Combinatorial_algorithm():
     
         return meal_plan
 
+total_calories = 1500
+is_optimal = False
+user_profile_weights = {
+"protein_prediction": 0.455,
+"carbs_prediction": 0.455,
+"fats_prediction": 0.19
+}
+
+
+combAlgo = Combinatorail_alogrithm()
+user_meal_plan = combAlgo.create_meal_plan(is_optimal,user_profile_weights,total_calories)
+print("Meals in Plan:", len(user_meal_plan))
 

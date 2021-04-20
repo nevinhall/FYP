@@ -38,7 +38,7 @@ The function then creates the macro ratios for the given user profile
 def on_request_retrieve_user_details(ch, method, props, body):
 
     user_profile = retrieve_user_details(body)
-    user_profile_normalised = prep_data.normalise_data(user_profile)
+    user_profile_normalised,calories = prep_data.normalise_data(user_profile)
     user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile_normalised)
     response = generate_exercise_plan(user_profile_weights)
     write_exercise_plan_to_database(response,body)

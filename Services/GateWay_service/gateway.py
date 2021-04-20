@@ -94,8 +94,10 @@ def create_user_profile_rpc_call():
         allergies =  request.form.get('allergies')
         age =  request.form.get('age')
         dietray_options =  request.form.get('dietray_options')
+        gender = request.form.get('gender')
+      
 
-        return(user_profile_rpc().create_user_profile(user_id, height, weight, activity_level, allergies, age,dietray_options))
+        return(user_profile_rpc().create_user_profile(user_id, height, weight, activity_level, allergies, age,dietray_options,gender))
 
 
 

@@ -192,7 +192,7 @@ class user_profile_rpc(object):
         return self.response
 
 
-    def create_user_profile(self,user_id, height,weight,activity_level,allergies,age,dietray_options):
+    def create_user_profile(self,user_id, height,weight,activity_level,allergies,age,dietray_options,gender):
         data = {
            "user_id" :user_id,
            "height" :height,
@@ -200,7 +200,8 @@ class user_profile_rpc(object):
            "activity_level" :activity_level,
            "allergies":allergies,
            "age":age,
-           "dietray_options": dietray_options
+           "dietray_options": dietray_options,
+           "gender":gender
         
         }
 

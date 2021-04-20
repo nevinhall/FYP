@@ -21,12 +21,13 @@ def normalise_data(user_profile):
     dietary_options = user_profile[5]
     allergies = user_profile[6]
     age = user_profile[7]
+    calories = user_profile[8]
 
     weight_gain = 0
     weight_lose = 0
     weight_maintaince = 0
 
-
+    bmi =90
     if(float(bmi) < 18.):
         weight_gain = weight_gain + 3
     
@@ -68,6 +69,6 @@ def normalise_data(user_profile):
     
 
 
-    return  user_profile_converted
+    return  user_profile_converted, int(calories)
 
 

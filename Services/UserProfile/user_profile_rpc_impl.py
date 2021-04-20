@@ -173,7 +173,7 @@ def on_request_create_user_profile(ch, method, props, body):
  
     print(body['user_id'], body['height'],body['weight'],body['activity_level'],body['age'],body['dietray_options'], body['allergies'])
 
-    response = create_user_profile(body['user_id'], body['height'],body['weight'],body['activity_level'],body['allergies'],body['age'],body['dietray_options'])
+    response = create_user_profile(body['user_id'], body['height'],body['weight'],body['activity_level'],body['allergies'],body['age'],body['dietray_options'],body['gender'])
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
@@ -237,7 +237,7 @@ def user_profile_exist(user_id):
                 # cursor.execute("INSERT INTO user_profiles VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", (user_id))
         except:
 
-
+            print("failed to create profile")
             return("failed to create profile")
        
 
@@ -261,7 +261,8 @@ this function to populate the row.
 
 @returns string result 
 '''
-def create_user_profile(user_id, height,weight,activity_level,allergies,age,dietray_options):
+def create_user_profile(user_id, height,weight,activity_level,allergies,age,dietray_options,gender):
+    user_profile_exist(user_id)
 
     print(user_id)
     print(height)
@@ -271,9 +272,8 @@ def create_user_profile(user_id, height,weight,activity_level,allergies,age,diet
     print(age)
     print(dietray_options)
 
- 
-
     bmi = calcualte_bmi(height,weight)
+    calories = calculate_calories(gender,activity_level,weight,height,age)
    
     #database connection
     connection = pymysql.connect(host="localhost",user="root",passwd="",database="user_profiles" )
@@ -283,10 +283,10 @@ def create_user_profile(user_id, height,weight,activity_level,allergies,age,diet
 
     #executing the quires
     try:
-        cursor.execute("UPDATE user_profiles SET height = %s , weight = %s, bmi = %s, activity_level = %s, dietary_options = %s, allergies = %s, age = %s WHERE user_id = %s",(
-        height,weight,bmi,activity_level,dietray_options,allergies,age,user_id))
-    except:
-
+        cursor.execute("UPDATE user_profiles SET height = %s , weight = %s, bmi = %s, activity_level = %s, dietary_options = %s, allergies = %s,age = %s,calories = %s, gender = %s WHERE user_id = %s",(
+        height,weight,bmi,activity_level,dietray_options,allergies,age,calories,gender,user_id))
+    except(Exception):
+        
 
         return("failed to populate user profile")
     
@@ -317,6 +317,26 @@ def calcualte_bmi(height,weight):
 
     return int(weight/(height**2))
 
+def calculate_calories(gender,activity_level,weight,height,age):
+    kg_to_lbs = int(weight) * 2.205
+    cm_to_inch = int(height) / 2.54
+    age = int(age)
+
+    calories = 1800
+
+    if(gender == "male"):
+        bmr = (66 +(6.3 * kg_to_lbs) + (12.9 * cm_to_inch)) - (6.8 * age)
+
+    if(gender == "female"):
+       bmr = (655 +(4.3 * kg_to_lbs) + (4.7 * cm_to_inch)) - (4.7 * age)
+
+    if(activity_level == "low"):
+        calories = bmr *1.375
+
+    if(activity_level == "high"):
+        calories = bmr * 1.725
+
+    return calories
 
 '''
 This method is responisbe for getting a user profile given an ID

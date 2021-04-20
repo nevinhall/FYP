@@ -37,14 +37,19 @@ The function then creates the macro ratios for the given user profile
 def on_request_retrieve_user_details(ch, method, props, body):
 
     user_profile = retrieve_user_details(body)
-    user_profile_normalised = prep_data.normalise_data(user_profile)
+    user_profile_normalised,total_calories= prep_data.normalise_data(user_profile)
     user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile_normalised)
 
-    user_profile_weights = user_profile_weights[0]
-    total_calories = 1500
+ 
     is_optimal = False
 
+    if(user_profile_weights[1] == "weight lose"):
+       total_calories = total_calories - 700
+    
+    if(user_profile_weights[1] == "weight gain"):
+       total_calories = total_calories + 700
 
+    user_profile_weights = user_profile_weights[0]
     response = Combinatorial_algorithm.Combinatorial_algorithm().create_meal_plan(is_optimal,user_profile_weights,total_calories)
     write_meal_plan_to_database(response,body)
 
@@ -77,7 +82,6 @@ def retrieve_user_details(user_id):
 def write_meal_plan_to_database(mealplan,user_id):
     client = MongoClient('mongodb://127.0.0.1:27017')
     db =client.meal
-    db[f"{user_id}"].drop()
     db[f"{user_id}"].insert_one({"ID":str(uuid.uuid4()),"inUse":1,"favourited":0,"mealplan":mealplan})
 
     
