@@ -2,7 +2,7 @@ from re import M
 import re
 from pymongo import MongoClient
 import json
-from numpy import random
+from numpy import log, random
 import numpy as np
 from pymongo.common import validate_driver_or_none
 
@@ -43,7 +43,7 @@ class Combinatorial_algorithm():
         meal_calories = []
         meal_macro_preference  = []
 
-        if diet_restrictions != "null":
+        if diet_restrictions == "Vegetarian":
                 for meal in self.db.meals.find({"$and":[{macro: {"$gte": macro_avg}},{"Category": {"$eq":"Vegetarian"}}]}):
                     meals.append(meal)
                     meals_ids.append(meal['idMeal'])
@@ -51,13 +51,13 @@ class Combinatorial_algorithm():
                     meal_macro_preference.append(meal[macro])
 
         else:
-            for meal in self.db.meals.find({macro: {"$gte": macro_avg}}):
+            for meal in self.db.meals.find():
                 meals.append(meal)
                 meals_ids.append(meal['idMeal'])
                 meal_calories.append(meal['calories'])
                 meal_macro_preference.append(meal[macro])
 
-
+      
         return meals, meals_ids,meal_calories ,meal_macro_preference
 
 

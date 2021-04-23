@@ -1,3 +1,5 @@
+from math import log
+from bson.json_util import dumps
 from pymongo import MongoClient
 import re
 import pika
@@ -11,6 +13,7 @@ import pandas as pd
 import rpc_call
 from recommender_system import Create_meal_plan_weights
 import prep_data
+from bson.json_util import dumps
 
 
 
@@ -41,7 +44,9 @@ def on_request_retrieve_user_details(ch, method, props, body):
     user_profile_normalised,calories = prep_data.normalise_data(user_profile)
     user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile_normalised)
     response = generate_exercise_plan(user_profile_weights)
-    write_exercise_plan_to_database(response,body)
+    response = write_exercise_plan_to_database(response,body)
+
+
 
     
     
@@ -120,9 +125,12 @@ def write_exercise_plan_to_database(exercise_plan,user_id):
     client = MongoClient('mongodb://127.0.0.1:27017')
     db = client.workouts
     # db[f"{user_id}"].drop()
-    db[f"{user_id}"].insert_one({"ID":str(uuid.uuid4()),"inUse":1,"favourited":0,"exercise_plan":exercise_plan})
+    planID = str(uuid.uuid4())
+    db[f"{user_id}"].insert_one({"ID":planID,"inUse":1,"favourited":0,"exercise_plan":exercise_plan})
+   
 
-    print(db[f"{user_id}"].find_one())
+    print(exercise_plan)
+    return(dumps(db[f"{user_id}"].find_one( {"ID": {"$eq":planID}})))
 
 
         

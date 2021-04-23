@@ -140,6 +140,17 @@ def set_current_user_exercise_plan_rpc_call():
 
 
 
+
+@app.route('/set_current_user_meal_plan', methods=['Post'])
+def set_current_user_meal_plan_rpc_call():
+    user_id = request.form.get('user_id')
+    meal_plan_id =request.form.get('meal_plan_id')
+
+
+    return(user_profile_rpc().set_user_current_meal_plan(user_id,meal_plan_id))
+
+
+
 @app.route('/get_user_current_meal_plan', methods=['Post'])
 def get_user_current_meal_plan_rpc_call():
     user_id = request.form.get('user_id')

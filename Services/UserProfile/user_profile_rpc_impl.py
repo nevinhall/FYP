@@ -1,9 +1,11 @@
+from math import log
 import re
 import pika
 import json
 import pymysql
 from validate_email import validate_email
 from pymongo import MongoClient
+from bson.json_util import dumps
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters('localhost'))
@@ -196,7 +198,7 @@ def del_user_profile(user_id):
     connection = pymysql.connect(host="localhost",user="root",passwd="",database="user_profiles" )
     cursor = connection.cursor()
 
-    sql = "DELETE user_id FROM user_profiles WHERE user_id =%s"
+    sql = "DELETE  FROM user_profiles WHERE user_id =%s"
     cursor.execute(sql,user_id)
     result = cursor.fetchone()
     print(result)
@@ -204,6 +206,18 @@ def del_user_profile(user_id):
     #commiting the connection then closing it.
     connection.commit()
     connection.close()
+
+    # user_id = "b'"+user_id+"'"
+    client = MongoClient('mongodb://127.0.0.1:27017')
+
+    db = client.workouts
+    print("Deleting",user_id)
+
+    db[f"{user_id}"].drop()
+
+    db = client.meal
+    db[f"{user_id}"].drop()
+
 
 
     return("delete failed")
@@ -357,13 +371,15 @@ def get_user_profile(user_id):
     user_profile = cursor.fetchone()
    
  
-    return(user_profile)
+    return(dumps(user_profile))
 
 
 
 
 def get_user_meal_plan(user_id):
-    print("getting meal plan")
+    print(user_id)
+    # user_id = "b'"+user_id+"'"
+    print("getting all meal plans",user_id)
     client = MongoClient('mongodb://127.0.0.1:27017')
     db =client.meal
  
@@ -371,7 +387,7 @@ def get_user_meal_plan(user_id):
     for meal_plan in db[f"{user_id}"].find():
         user_meal_plans.append(meal_plan)
         
-    return(user_meal_plans)
+    return(dumps(user_meal_plans))
 
 
 
@@ -384,7 +400,7 @@ def get_user_exercise_plan(user_id):
     for workout_plan in db[f"{user_id}"].find():
         user_workouts.append(workout_plan)
         
-    return(user_workouts)
+    return(dumps(user_workouts))
 
 
 
@@ -393,7 +409,7 @@ def get_current_user_meal_plan(user_id):
     client = MongoClient('mongodb://127.0.0.1:27017')
     db =client.meal
  
-    return(db[f"{user_id}"].find_one({"inUse": {"$eq":1}}))
+    return(dumps(db[f"{user_id}"].find_one({"inUse": {"$eq":1}})))
 
 
 
@@ -403,48 +419,52 @@ def get_current_user_exercise_plan(user_id):
     client = MongoClient('mongodb://127.0.0.1:27017')
     db = client.workouts
     
-
-    return(db[f"{user_id}"].find_one({"inUse": {"$eq":1}}))
+    print("get_current_user_exercise_plan",user_id)
+    return(dumps(db[f"{user_id}"].find_one({"inUse": {"$eq":1}})))
 
 
 
 
 def set_current_user_meal_plan(user_id,meal_plan_id):
+    user_id = "b'"+user_id+"'"
     print("getting meal plan")
     client = MongoClient('mongodb://127.0.0.1:27017')
     db =client.meal
  
-    myquery = { "inUse": 1}
+    myquery =  {"inUse": {"$eq":1}}
     newvalues = { "$set": {"inUse": 0} }
 
-    db[f"{user_id}"].update_one(myquery, newvalues)
-    
+    db[f"{user_id}"].update_many(myquery, newvalues)
+    print(  db[f"{user_id}"].find_one())
 
-    myquery = { "ID":meal_plan_id}
+    myquery =  {"ID": {"$eq":meal_plan_id}}
     newvalues = { "$set": {"inUse": 1} }
 
-    db[f"{user_id}"].update_one(myquery, newvalues)
+   
+    return(db[f"{user_id}"].update_one(myquery, newvalues))
 
-
-    return()
+  
 
 
 
 
 def set_current_user_exercise_plan(user_id,exercise_plan_id):
-    print("getting exercise plan") 
+    print("setting exercise plan") 
+    user_id = "b'"+user_id+"'"
     client = MongoClient('mongodb://127.0.0.1:27017')
     db = client.workouts
+    print("set_current_user_exercise_plan",user_id)
 
-    myquery = { "inUse": 1}
+    myquery =  {"inUse": {"$eq":1}}
     newvalues = { "$set": {"inUse": 0} }
 
-    db[f"{user_id}"].update_one(myquery, newvalues)
+    db[f"{user_id}"].update_many(myquery, newvalues)
+    print(  db[f"{user_id}"].find_one())
 
-    myquery = { "ID": exercise_plan_id}
+    myquery =  {"ID": {"$eq":exercise_plan_id}}
     newvalues = { "$set": {"inUse": 1} }
 
-
+   
     return(db[f"{user_id}"].update_one(myquery, newvalues))
 
 

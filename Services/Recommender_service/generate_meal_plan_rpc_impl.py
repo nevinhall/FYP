@@ -11,7 +11,7 @@ import rpc_call
 from recommender_system import Create_meal_plan_weights
 import prep_data
 from recommender_system import Combinatorial_algorithm
-
+from bson.json_util import dumps
 
 """
 Setup neccessary communication for rabbitMQ
@@ -51,7 +51,7 @@ def on_request_retrieve_user_details(ch, method, props, body):
 
     user_profile_weights = user_profile_weights[0]
     response = Combinatorial_algorithm.Combinatorial_algorithm().create_meal_plan(is_optimal,user_profile_weights,total_calories)
-    write_meal_plan_to_database(response,body)
+    response =  write_meal_plan_to_database(response,body)
 
 
     
@@ -81,8 +81,11 @@ def retrieve_user_details(user_id):
 
 def write_meal_plan_to_database(mealplan,user_id):
     client = MongoClient('mongodb://127.0.0.1:27017')
+    planID = str(uuid.uuid4())
     db =client.meal
-    db[f"{user_id}"].insert_one({"ID":str(uuid.uuid4()),"inUse":1,"favourited":0,"mealplan":mealplan})
+    db[f"{user_id}"].insert_one({"ID":planID,"inUse":1,"favourited":0,"mealplan":mealplan})
+
+    return(dumps(db[f"{user_id}"].find_one( {"ID": {"$eq":planID}})))
 
     
 
