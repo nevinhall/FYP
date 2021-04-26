@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from flask_cors.core import FLASK_CORS_EVALUATED
 from pika.spec import methods
 from .generate_exercise_plan_rpc import generate_exercise_plan_rpc
 import re
@@ -6,6 +7,7 @@ from .user_profile_rpc import user_profile_rpc
 from .login_rpc import login_rpc
 from.sign_up_rpc import sign_up_rpc
 from .generate_meal_plan_rpc import generate_meal_plan_rpc
+from .admin_rpc import admin_rpc
 
 
 from flask import Flask, request
@@ -163,3 +165,62 @@ def get_user_current_exercise_plan_rpc_call():
     user_id = request.form.get('user_id')
   
     return(user_profile_rpc().get_user_current_exercise_plan(user_id))
+
+
+
+
+@app.route('/get_num_users', methods=['Get'])
+def get_num_users(): 
+    return(admin_rpc().get_num_users())
+
+
+@app.route('/get_num_users_gender', methods=['Post'])
+def get_num_users_gender():  
+      gender = request.form.get('gender')
+      return(admin_rpc().get_num_users_gender(gender))
+
+
+@app.route('/get_all_meals', methods=['Get'])
+def get_all_meals():  
+      return(admin_rpc().get_all_meals())
+
+
+@app.route('/get_all_exercises', methods=['Get'])
+def get_all_exercises():  
+      return(admin_rpc().get_all_exercises())
+
+
+@app.route('/del_meal', methods=['POST'])
+def del_meal_rpc_call():
+    meal_id = request.form.get('meal_id')
+    return(admin_rpc().del_meal(meal_id))
+
+
+@app.route('/del_exercise', methods=['POST'])
+def del_exercise_rpc_call():
+    exercise_id = request.form.get('exercise_id')
+    return(admin_rpc().del_exercise(exercise_id))
+
+
+@app.route('/create_meal', methods=['POST'])
+def create_meal_rpc_call():
+    Meal = request.form.get('meal')
+    Protein = request.form.get('protein')
+    Carbs = request.form.get('carbs')
+    Fats = request.form.get('Fats')
+    calories = request.form.get('calories')
+    Category = request.form.get('category')
+    strArea = request.form.get('strArea')
+    strInstructions = request.form.get('strInstructions')
+    strYoutube = request.form.get('strYoutube')
+    return(admin_rpc().create_meal(Meal,Protein,Carbs,Fats,calories,Category,strArea,strInstructions,strYoutube))
+
+
+@app.route('/create_exercise', methods=['POST'])
+def create_exercise_rpc_call():
+    name = request.form.get('name')
+    desciption = request.form.get('deciption')
+    type = request.form.get('type')
+    reps = request.form.get('reps')
+
+    return(admin_rpc().create_exercise(name,desciption,type,reps))
