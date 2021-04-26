@@ -207,7 +207,7 @@ def create_meal_rpc_call():
     Meal = request.form.get('meal')
     Protein = request.form.get('protein')
     Carbs = request.form.get('carbs')
-    Fats = request.form.get('Fats')
+    Fats = request.form.get('fats')
     calories = request.form.get('calories')
     Category = request.form.get('category')
     strArea = request.form.get('strArea')

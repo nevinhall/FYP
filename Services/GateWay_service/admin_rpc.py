@@ -142,12 +142,16 @@ class admin_rpc(object):
 
     
     def create_meal(self,Meal,Protein,Carbs,Fats,calories,Category,strArea,strInstructions,strYoutube):
+        Protein = int(Protein)
+        Carbs = int(Carbs)
+        calories = int(calories)
+        Fats = int(Fats)
 
         data = {
             "Meal" :Meal,
-            "Protein": int(Protein),
-            "Carbs": int(Carbs),
-            "Fats": int(Fats),
+            "Protein":Protein,
+            "Carbs": Carbs,
+            "Fats":Fats,
             "calories": calories,
             "Category": Category,
             "strArea": strArea,

@@ -12,6 +12,8 @@ channel = connection.channel()
 channel.queue_declare(queue='get_num_users_rpc_queue')
 channel.queue_declare(queue='get_num_users_gender_rpc_queue')
 channel.queue_declare(queue='get_all_meals_rpc_queue')
+channel.queue_declare(queue='get_all_exercises_rpc_queue')
+channel.queue_declare(queue='create_meal_rpc_queue')
 
 
 #database connection
@@ -26,8 +28,6 @@ cursor_user_profiles = connection_user_profiles.cursor()
 
 
 def get_num_users():
-   
-    
     try:
         sql = "SELECT COUNT(user_id) FROM user_profiles"
         cursor_user_profiles.execute(sql)
@@ -64,6 +64,65 @@ def get_all_meals():
         meals.append(meal)
         
     return(dumps(meals))
+
+
+def get_all_exercises():
+
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    db =client.workouts
+ 
+    workouts = []
+    for workout in db["workout"].find():
+        workouts.append(workout)
+        
+    return(dumps(workouts))
+
+
+def creat_meal(Meal,Protein,Carbs,Fats,calories,Category,strArea,strInstructions,strYoutube):
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    db =client.meal
+
+    values = {
+        "idMeal": "test",
+        "Meal": Meal,
+        "Protein": Protein,
+        "Carbs":Carbs,
+        "Fats":Fats,
+        "calories":calories,
+        "Category":Category,
+        "strArea":strArea,
+        "strInstructions":strInstructions,
+        "strYoutube":strYoutube
+
+    }
+    print("protein type", type(Protein))
+    db["meals"].insert_one(values)
+    
+
+def on_request_create_meal(ch, method, props, body):
+    body = json.loads(body)
+
+    response = creat_meal(body["Meal"],body["Protein"],body["Carbs"],body["Fats"],body["calories"],body["Category"],body["strArea"],body["strInstructions"],body["strYoutube"])
+
+    ch.basic_publish(exchange='',
+                     routing_key=props.reply_to,
+                     properties=pika.BasicProperties(correlation_id = \
+                                                         props.correlation_id),
+                     body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+    
+
+
+def on_request_get_all_exercises(ch, method, props, body):
+ 
+    response = get_all_exercises()
+
+    ch.basic_publish(exchange='',
+                     routing_key=props.reply_to,
+                     properties=pika.BasicProperties(correlation_id = \
+                                                         props.correlation_id),
+                     body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
 
@@ -117,6 +176,8 @@ channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue='get_num_users_rpc_queue', on_message_callback=on_request_get_num_users)
 channel.basic_consume(queue='get_num_users_gender_rpc_queue', on_message_callback=on_request_get_num_users_gender)
 channel.basic_consume(queue='get_all_meals_rpc_queue', on_message_callback=on_request_get_all_meals)
+channel.basic_consume(queue='get_all_exercises_rpc_queue', on_message_callback=on_request_get_all_exercises)
+channel.basic_consume(queue='create_meal_rpc_queue', on_message_callback=on_request_create_meal)
 
 
 print("Admin service")
