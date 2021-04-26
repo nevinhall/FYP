@@ -1,6 +1,8 @@
 import pika
 import json
 import pymysql
+from pymongo import MongoClient
+from bson.json_util import dumps
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(host='localhost'))
@@ -9,6 +11,7 @@ channel = connection.channel()
 
 channel.queue_declare(queue='get_num_users_rpc_queue')
 channel.queue_declare(queue='get_num_users_gender_rpc_queue')
+channel.queue_declare(queue='get_all_meals_rpc_queue')
 
 
 #database connection
@@ -50,6 +53,31 @@ def get_num_user_gender(gender):
 
     return(result)
 
+
+def get_all_meals():
+
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    db =client.meal
+ 
+    meals= []
+    for meal in db["meals"].find():
+        meals.append(meal)
+        
+    return(dumps(meals))
+
+
+
+def on_request_get_all_meals(ch, method, props, body):
+ 
+    response = get_all_meals()
+
+    ch.basic_publish(exchange='',
+                     routing_key=props.reply_to,
+                     properties=pika.BasicProperties(correlation_id = \
+                                                         props.correlation_id),
+                     body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
     
 
 def on_request_get_num_users_gender(ch, method, props, body):
@@ -70,7 +98,6 @@ def on_request_get_num_users_gender(ch, method, props, body):
 
 def on_request_get_num_users(ch, method, props, body):
  
-
     response = get_num_users()
 
     ch.basic_publish(exchange='',
@@ -82,10 +109,14 @@ def on_request_get_num_users(ch, method, props, body):
 
 
 
+
+
+
 channel.basic_qos(prefetch_count=1)
 
 channel.basic_consume(queue='get_num_users_rpc_queue', on_message_callback=on_request_get_num_users)
 channel.basic_consume(queue='get_num_users_gender_rpc_queue', on_message_callback=on_request_get_num_users_gender)
+channel.basic_consume(queue='get_all_meals_rpc_queue', on_message_callback=on_request_get_all_meals)
 
 
 print("Admin service")
