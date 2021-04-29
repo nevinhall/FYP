@@ -1,5 +1,6 @@
 import pika
 import json
+from pika.connection import PRODUCT
 import pymysql
 
 connection = pika.BlockingConnection(
@@ -11,12 +12,14 @@ channel.queue_declare(queue='rpc_queue')
 channel.queue_declare(queue='forgot_password_rpc_queue')
 
 #database connection
-connection = pymysql.connect(host="localhost",user="root",passwd="",database="users" )
-cursor = connection.cursor()
+
 
 
 
 def login(email,password): 
+    connection = pymysql.connect(host="localhost",user="root",passwd="",database="users" )
+    cursor = connection.cursor()
+    
     if(valid_email(email) and valid_password(email,password)):
         sql = "SELECT user_id FROM users WHERE email =%s"
         cursor.execute(sql,email)
@@ -28,10 +31,13 @@ def login(email,password):
 
 
 def valid_email(email):
+    connection = pymysql.connect(host="localhost",user="root",passwd="",database="users" )
+    cursor = connection.cursor()
+
     sql = "SELECT * FROM users WHERE email =%s"
     cursor.execute(sql,email)
     result = cursor.fetchone()
-    print(result)
+    print("Valid email",result)
 
 
     if(result == None):
@@ -41,10 +47,13 @@ def valid_email(email):
 
 
 def valid_password(email,password):
+    connection = pymysql.connect(host="localhost",user="root",passwd="",database="users" )
+    cursor = connection.cursor()
+
     cursor.execute("""SELECT password FROM users WHERE email = %s AND password = %s""" ,(email, password))
     result = cursor.fetchone()
    
-
+    print("Valid password", result)
     if(result == None):
         return False
     return True

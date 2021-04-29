@@ -198,8 +198,8 @@ def del_meal_rpc_call():
 
 @app.route('/del_exercise', methods=['POST'])
 def del_exercise_rpc_call():
-    exercise_id = request.form.get('exercise_id')
-    return(admin_rpc().del_exercise(exercise_id))
+    exercise_name = request.form.get('exercise_name')
+    return(admin_rpc().del_exercise(exercise_name))
 
 
 @app.route('/create_meal', methods=['POST'])
