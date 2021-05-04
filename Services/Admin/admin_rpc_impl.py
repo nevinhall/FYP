@@ -59,7 +59,7 @@ def get_num_user_gender(gender):
 
 
 def get_all_meals():
-
+    print("Request Made for all meals")
     client = MongoClient('mongodb://127.0.0.1:27017')
     db =client.meal
  

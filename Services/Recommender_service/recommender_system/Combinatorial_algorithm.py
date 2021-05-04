@@ -157,23 +157,35 @@ class Combinatorial_algorithm():
             calorie_ratio = int(total_calories * prediction_ratio)
             print(key,calorie_ratio)
 
-            if(not is_Optimal):
-                self.protein_heavy_meal, self.protein_heavy_meal_ids, self.protein_heavy_meal_calories, self.protein_heavy_meal_macro_preference  = self.shuffle_arrays(self.protein_heavy_meal, self.protein_heavy_meal_ids, self.protein_heavy_meal_calories, self.protein_heavy_meal_macro_preference )
-                self.carb_heavy_meal, self.carb_heavy_meal_ids, self.carb_heavy_meal_calories, self.carb_heavy_meal_macro_preference= self.shuffle_arrays(self.carb_heavy_meal, self.carb_heavy_meal_ids, self.carb_heavy_meal_calories, self.carb_heavy_meal_macro_preference)
-                self.fats_heavy_meal, self.fats_heavy_meal_ids,self.fats_heavy_meal_calories ,self.fats_heavy_meal_macro_preference= self.shuffle_arrays(self.fats_heavy_meal, self.fats_heavy_meal_ids,self.fats_heavy_meal_calories ,self.fats_heavy_meal_macro_preference)
+            if(is_Optimal == "false"):
+                print("Generating non optimal meal plan")
+                protein_heavy_meal, protein_heavy_meal_ids, protein_heavy_meal_calories, protein_heavy_meal_macro_preference  = self.shuffle_arrays(self.protein_heavy_meal, self.protein_heavy_meal_ids, self.protein_heavy_meal_calories, self.protein_heavy_meal_macro_preference )
+                carb_heavy_meal, carb_heavy_meal_ids, carb_heavy_meal_calories, carb_heavy_meal_macro_preference= self.shuffle_arrays(self.carb_heavy_meal, self.carb_heavy_meal_ids, self.carb_heavy_meal_calories, self.carb_heavy_meal_macro_preference)
+                fats_heavy_meal, fats_heavy_meal_ids,fats_heavy_meal_calories ,fats_heavy_meal_macro_preference= self.shuffle_arrays(self.fats_heavy_meal, self.fats_heavy_meal_ids,self.fats_heavy_meal_calories ,self.fats_heavy_meal_macro_preference)
+
+                if  calorie_ratio != 0:
+                    if key == "protein_prediction" and calorie_ratio != 0:
+                        self.generate_meal_plan(protein_heavy_meal_ids, protein_heavy_meal_macro_preference,protein_heavy_meal_calories,calorie_ratio,protein_heavy_meal_ids,meal_plan,protein_heavy_meal)
+
+                    if key == "carbs_prediction":
+                        self.generate_meal_plan(carb_heavy_meal_ids, carb_heavy_meal_macro_preference, carb_heavy_meal_calories,calorie_ratio,self.carb_heavy_meal_ids,meal_plan,carb_heavy_meal)
+
+                    if key == "fats_prediction":
+                        self.generate_meal_plan(fats_heavy_meal_ids, fats_heavy_meal_macro_preference,fats_heavy_meal_calories,calorie_ratio,fats_heavy_meal_ids,meal_plan,fats_heavy_meal)
                 
+            else:
             
-            if  calorie_ratio != 0:
-                if key == "protein_prediction" and calorie_ratio != 0:
-                    self.generate_meal_plan(self.protein_heavy_meal_ids, self.protein_heavy_meal_macro_preference,self.protein_heavy_meal_calories,calorie_ratio,self.protein_heavy_meal_ids,meal_plan,self.protein_heavy_meal)
+                if  calorie_ratio != 0:
+                    if key == "protein_prediction" and calorie_ratio != 0:
+                        self.generate_meal_plan(self.protein_heavy_meal_ids, self.protein_heavy_meal_macro_preference,self.protein_heavy_meal_calories,calorie_ratio,self.protein_heavy_meal_ids,meal_plan,self.protein_heavy_meal)
 
-                if key == "carbs_prediction":
-                    self.generate_meal_plan(self.carb_heavy_meal_ids, self.carb_heavy_meal_macro_preference,self.carb_heavy_meal_calories,calorie_ratio,self.carb_heavy_meal_ids,meal_plan,self.carb_heavy_meal)
+                    if key == "carbs_prediction":
+                        self.generate_meal_plan(self.carb_heavy_meal_ids, self.carb_heavy_meal_macro_preference,self.carb_heavy_meal_calories,calorie_ratio,self.carb_heavy_meal_ids,meal_plan,self.carb_heavy_meal)
 
-                if key == "fats_prediction":
-                    self.generate_meal_plan(self.fats_heavy_meal_ids, self.fats_heavy_meal_macro_preference,self.fats_heavy_meal_calories,calorie_ratio,self.fats_heavy_meal_ids,meal_plan,self.fats_heavy_meal)
-                    
-    
+                    if key == "fats_prediction":
+                        self.generate_meal_plan(self.fats_heavy_meal_ids, self.fats_heavy_meal_macro_preference,self.fats_heavy_meal_calories,calorie_ratio,self.fats_heavy_meal_ids,meal_plan,self.fats_heavy_meal)
+                        
+        
         return meal_plan
 
 

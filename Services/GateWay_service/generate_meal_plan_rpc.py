@@ -29,7 +29,15 @@ class generate_meal_plan_rpc(object):
 
             
 
-    def generate_meal_plan_rpc(self, user_id):
+    def generate_meal_plan_rpc(self, user_id,is_optimal):
+
+        data = { 
+            "user_id": user_id,
+            "is_optimal": is_optimal
+        }
+
+        data  = json.dumps(data)
+
 
         self.response = None
         self.corr_id = str(uuid.uuid4())
@@ -40,7 +48,7 @@ class generate_meal_plan_rpc(object):
                 reply_to=self.callback_queue,
                 correlation_id=self.corr_id,
             ),
-            body=user_id)
+            body=data)
         while self.response is None:
             self.connection.process_data_events()
         return self.response

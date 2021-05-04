@@ -87,6 +87,7 @@ def del_user_rpc_call():
 
 
 
+
 @app.route('/createuserprofile', methods=['Post'])
 def create_user_profile_rpc_call():
         user_id =  request.form.get('user_id')
@@ -105,10 +106,14 @@ def create_user_profile_rpc_call():
 
 @app.route('/generatemealplan', methods=['Post'])
 def generate_meal_plan_rpc_call():
+      print( request.form)
       user_id =  request.form.get('user_id')
+      is_optimal = request.form.get('is_optimal')
+    
+      print("user_id",user_id)  
+      print("is_optiaml",is_optimal)
 
-
-      return(generate_meal_plan_rpc().generate_meal_plan_rpc(user_id))
+      return(generate_meal_plan_rpc().generate_meal_plan_rpc(user_id,is_optimal))
     #set FLASK_APP=gateway.py
     #$env:FLASK_APP = "gateway.py"
     #flask run
@@ -118,6 +123,7 @@ def generate_meal_plan_rpc_call():
 @app.route('/generateexerciseplan', methods=['Post'])
 def generate_exercise_plan_rpc_call():
     user_id =  request.form.get('user_id')
+
     return(generate_exercise_plan_rpc().generate_exercise_plan_rpc(user_id))
 
 @app.route('/get_exercise_plan', methods=['Post'])

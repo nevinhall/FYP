@@ -39,12 +39,19 @@ The function then creates the macro ratios for the given user profile
 @returns: completed meal plan
 """
 def on_request_retrieve_user_details(ch, method, props, body):
+    
+    user_id = str(body)
+    user_id = user_id.strip("'")
+    user_id = user_id[2:]
 
-    user_profile = retrieve_user_details(body)
-    user_profile_normalised,calories = prep_data.normalise_data(user_profile)
+    user_profile = retrieve_user_details(user_id)
+    print(user_profile)
+   
+    user_profile_normalised,calories,activity_level  = prep_data.normalise_data(user_profile)
     user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile_normalised)
-    response = generate_exercise_plan(user_profile_weights)
-    response = write_exercise_plan_to_database(response,body)
+    response = generate_exercise_plan(user_profile_weights,activity_level)
+    print(activity_level)
+    response = write_exercise_plan_to_database(response,user_id)
 
 
 
@@ -66,6 +73,9 @@ the function retrieves a user profile for the given ID.
 @returns: user profile.
 """
 def retrieve_user_details(user_id):
+ 
+
+    print(str(user_id))
     user_profile = rpc_call.rpc_call().get_user_profile(user_id)
 
 
@@ -94,17 +104,38 @@ def retrieve_workouts(user_profile_weights):
 """
 
 """
-def generate_exercise_plan(user_profile_weights):
+def generate_exercise_plan(user_profile_weights,activity_level):
+
     user_workout_plan = []
     workouts_cardio,workouts_strength = retrieve_workouts(user_profile_weights)
- 
+
+
+    for workout in workouts_cardio:
+        if "low" in activity_level:
+            workout["reps"] = "30 seconds"
+        else:
+             workout["reps"] = "1 min"
+
+
+    for workout in workouts_cardio:
+        if "low" in activity_level:
+            workout["reps"] = "8"
+        else:
+                workout["reps"] = "12"
+
+    
+    
+
+    # for workout in workouts_strength:
+    #     for exercise in workout:
+     
+
 
     if user_profile_weights[1] == "weight gain":
        user_workout_plan.append(random.sample(workouts_strength, 2))
+
+       
        user_workout_plan.append(random.choice(workouts_cardio))
-
-
-       return user_workout_plan
 
 
 
@@ -113,8 +144,10 @@ def generate_exercise_plan(user_profile_weights):
           user_workout_plan.append(random.choice(workouts_strength))
           
 
-          return user_workout_plan
 
+    
+
+    return user_workout_plan
     #develop futher
     # else:
     #       user_workout_plan.append(random.sample(group_of_items, num_to_select))
@@ -123,13 +156,14 @@ def generate_exercise_plan(user_profile_weights):
 
 def write_exercise_plan_to_database(exercise_plan,user_id):
     client = MongoClient('mongodb://127.0.0.1:27017')
+    print("writing to user", user_id)
+  
     db = client.workouts
     # db[f"{user_id}"].drop()
     planID = str(uuid.uuid4())
     db[f"{user_id}"].insert_one({"ID":planID,"inUse":1,"favourited":0,"exercise_plan":exercise_plan})
    
 
-    print(exercise_plan)
     return(dumps(db[f"{user_id}"].find_one( {"ID": {"$eq":planID}})))
 
 

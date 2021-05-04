@@ -35,14 +35,24 @@ The function then creates the macro ratios for the given user profile
 @returns: completed meal plan
 """
 def on_request_retrieve_user_details(ch, method, props, body):
+  
 
-    user_profile = retrieve_user_details(body)
-    user_profile_normalised,total_calories= prep_data.normalise_data(user_profile)
+    print(body)
+   
+    body = json.loads(body)
+    user_id = body['user_id']
+    is_optimal = body['is_optimal']
+    print("is optimal:" ,is_optimal)
+    
+    
+    user_profile = retrieve_user_details(user_id)
+
+    print(user_profile)
+    user_profile_normalised,total_calories,activity_level= prep_data.normalise_data(user_profile)
     user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile_normalised)
 
  
-    is_optimal = False
-
+   
     if(user_profile_weights[1] == "weight lose"):
        total_calories = total_calories - 700
     
@@ -51,7 +61,7 @@ def on_request_retrieve_user_details(ch, method, props, body):
 
     user_profile_weights = user_profile_weights[0]
     response = Combinatorial_algorithm.Combinatorial_algorithm().create_meal_plan(is_optimal,user_profile_weights,total_calories)
-    response =  write_meal_plan_to_database(response,body)
+    response =  write_meal_plan_to_database(response,user_id)
 
 
     

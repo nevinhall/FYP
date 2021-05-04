@@ -69,6 +69,6 @@ def normalise_data(user_profile):
     
 
 
-    return  user_profile_converted, int(calories)
+    return  user_profile_converted, int(calories), activity_level
 
 

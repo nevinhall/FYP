@@ -2,6 +2,7 @@ from math import log
 import re
 import pika
 import json
+from pika.frame import Body
 import pymysql
 from validate_email import validate_email
 from pymongo import MongoClient
@@ -27,9 +28,12 @@ channel.queue_declare(queue='get_current_user_exercise_plan_rpc_queue')
 
 
 def on_request_del_user_profile(ch, method, props, body):
-    print(body)
+ 
+    body = json.loads(body)
+    user_id = body['user_id']
 
-    response = del_user_profile(body)
+
+    response = del_user_profile(user_id)
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
@@ -41,9 +45,14 @@ def on_request_del_user_profile(ch, method, props, body):
 
 
 def on_request_get_user_profile(ch, method, props, body):
-    print(body)
+    print("THIS IS BODY",body)
 
-    response = get_user_profile(body)
+   
+    body = json.loads(body)
+    user_id = body['user_id']
+
+
+    response = get_user_profile(user_id)
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
@@ -55,9 +64,11 @@ def on_request_get_user_profile(ch, method, props, body):
 
 
 def on_request_get_user_meal_plan(ch, method, props, body):
-    print(body)
+    print("THIS CORRECT BODY",  body)
+    body = json.loads(body)
+    user_id = body['user_id']
 
-    response = get_user_meal_plan(body)
+    response = get_user_meal_plan(user_id)
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
@@ -69,9 +80,12 @@ def on_request_get_user_meal_plan(ch, method, props, body):
 
 
 def on_request_get_user_exercise_plan(ch, method, props, body):
-    print(body)
 
-    response = get_user_exercise_plan(body)
+    body = json.loads(body)
+    user_id = body['user_id']
+
+
+    response = get_user_exercise_plan(user_id)
 
     ch.basic_publish(exchange='',
                         routing_key=props.reply_to,
@@ -117,8 +131,10 @@ def on_request_set_current_user_meal_plan(ch, method, props, body):
 
 
 def on_request_get_current_user_exercise_plan(ch, method, props, body):
+    body = json.loads(body)
+    user_id = body['user_id']
 
-    response = get_current_user_exercise_plan(body)
+    response = get_current_user_exercise_plan(user_id)
 
     ch.basic_publish(exchange='',
                         routing_key=props.reply_to,
@@ -131,9 +147,11 @@ def on_request_get_current_user_exercise_plan(ch, method, props, body):
 
 
 def on_request_get_current_user_meal_plan(ch, method, props, body):
+    body = json.loads(body)
+    user_id = body['user_id']
 
 
-    response = get_current_user_meal_plan(body)
+    response = get_current_user_meal_plan(user_id)
 
     ch.basic_publish(exchange='',
                         routing_key=props.reply_to,
@@ -144,9 +162,10 @@ def on_request_get_current_user_meal_plan(ch, method, props, body):
 
 
 def on_request_get_user(ch, method, props, body):
-    print(body)
+    body = json.loads(body)
+    user_id = body['user_id']
 
-    response = get_user_profile(body)
+    response = get_user_profile(user_id)
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
@@ -158,9 +177,10 @@ def on_request_get_user(ch, method, props, body):
 
 
 def on_request_user_exists(ch, method, props, body):
-    print(body)
+    body = json.loads(body)
+    user_id = body['user_id']
 
-    response = user_profile_exist(body)
+    response = user_profile_exist(user_id)
 
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
@@ -217,7 +237,6 @@ def del_user_profile(user_id):
 
     db = client.meal
     db[f"{user_id}"].drop()
-
 
 
     return("delete failed")
@@ -405,7 +424,7 @@ def get_user_exercise_plan(user_id):
 
 
 def get_current_user_meal_plan(user_id):
-    print("getting meal plan")
+    print("getting meal plan for user",user_id)
     client = MongoClient('mongodb://127.0.0.1:27017')
     db =client.meal
  
@@ -426,8 +445,8 @@ def get_current_user_exercise_plan(user_id):
 
 
 def set_current_user_meal_plan(user_id,meal_plan_id):
-    user_id = "b'"+user_id+"'"
-    print("getting meal plan")
+   
+    print("setting meal plan for user", user_id)
     client = MongoClient('mongodb://127.0.0.1:27017')
     db =client.meal
  
@@ -435,7 +454,7 @@ def set_current_user_meal_plan(user_id,meal_plan_id):
     newvalues = { "$set": {"inUse": 0} }
 
     db[f"{user_id}"].update_many(myquery, newvalues)
-    print(  db[f"{user_id}"].find_one())
+ 
 
     myquery =  {"ID": {"$eq":meal_plan_id}}
     newvalues = { "$set": {"inUse": 1} }

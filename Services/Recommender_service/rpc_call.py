@@ -25,6 +25,11 @@ class rpc_call(object):
             self.response = body
 
     def get_user_profile(self, user_id):
+        data = {
+        "user_id": user_id
+        }
+        data  = json.dumps(data)
+        
         self.response = None
         self.corr_id = str(uuid.uuid4())
         self.channel.basic_publish(
@@ -34,7 +39,7 @@ class rpc_call(object):
                 reply_to=self.callback_queue,
                 correlation_id=self.corr_id,
             ),
-            body=user_id)
+            body=data)
         while self.response is None:
             self.connection.process_data_events()
         return self.response
