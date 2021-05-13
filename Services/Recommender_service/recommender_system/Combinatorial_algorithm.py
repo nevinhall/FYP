@@ -15,7 +15,7 @@ class Combinatorial_algorithm():
         """
         Connect to MongoDB Database.
         """
-        client = MongoClient('mongodb://127.0.0.1:27017')
+        client = MongoClient('mongodb://host.docker.internal:27017')
         self.db = client.meal
 
         
@@ -28,10 +28,12 @@ class Combinatorial_algorithm():
         self.fats_avg = 0.10
 
         self.dietary_needs = dietary_needs
+        print("innot dietary iptions",self.dietary_needs,flush=True)
 
         self.protein_heavy_meal,self.protein_heavy_meal_ids ,self.protein_heavy_meal_calories,self.protein_heavy_meal_macro_preference = self.find_meals("Protein",self.protein_avg,self.dietary_needs)
         self.carb_heavy_meal ,self.carb_heavy_meal_ids ,self.carb_heavy_meal_calories ,self.carb_heavy_meal_macro_preference = self.find_meals("Carbs",self.carbs_avg,self.dietary_needs)
         self.fats_heavy_meal,self.fats_heavy_meal_ids,self.fats_heavy_meal_calories,self.fats_heavy_meal_macro_preference = self.find_meals("Fats",self.fats_avg,self.dietary_needs)
+
 
     """
     Retrieve data for a given macro. Append the results
@@ -43,7 +45,9 @@ class Combinatorial_algorithm():
         meal_calories = []
         meal_macro_preference  = []
 
-        if diet_restrictions == "Vegetarian":
+        print("Dietary option find meal",diet_restrictions,flush=True)
+        if diet_restrictions == "Vegatarian":
+                print("THis should be vegatarian",flush=True)
                 for meal in self.db.meals.find({"$and":[{macro: {"$gte": macro_avg}},{"Category": {"$eq":"Vegetarian"}}]}):
                     meals.append(meal)
                     meals_ids.append(meal['idMeal'])
@@ -71,6 +75,8 @@ class Combinatorial_algorithm():
     """
     def solve_knapsack(self,nutritional_preference_value, meal_calories, total_calories,macro_heavy_meal_ids):
         includes_meal_ids = []
+
+        #Length of candidate
         n = len(nutritional_preference_value) 
         if total_calories <= 0 or n == 0 or len(meal_calories) != n:
             return []

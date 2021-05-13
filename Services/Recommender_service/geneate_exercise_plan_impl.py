@@ -14,6 +14,7 @@ import rpc_call
 from recommender_system import Create_meal_plan_weights
 import prep_data
 from bson.json_util import dumps
+import random
 
 
 
@@ -21,7 +22,7 @@ from bson.json_util import dumps
 Setup neccessary communication for rabbitMQ
 """
 connection = pika.BlockingConnection(
-    pika.ConnectionParameters('localhost'))
+         pika.ConnectionParameters(host='rabbitmq',port="5672"))
 
 channel = connection.channel()
 
@@ -44,8 +45,9 @@ def on_request_retrieve_user_details(ch, method, props, body):
     user_id = user_id.strip("'")
     user_id = user_id[2:]
 
+    print("GEN EXERCISE: Fetching profile with ID",user_id)
     user_profile = retrieve_user_details(user_id)
-    print(user_profile)
+    print("GEN EXERCISE: Fetched profile result",user_profile)
    
     user_profile_normalised,calories,activity_level  = prep_data.normalise_data(user_profile)
     user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile_normalised)
@@ -82,7 +84,7 @@ def retrieve_user_details(user_id):
     return user_profile
 
 def retrieve_workouts(user_profile_weights):
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
     db = client.workouts
 
     workouts_cardio = []
@@ -108,6 +110,7 @@ def generate_exercise_plan(user_profile_weights,activity_level):
 
     user_workout_plan = []
     workouts_cardio,workouts_strength = retrieve_workouts(user_profile_weights)
+    exercise_type =  user_profile_weights[1] 
 
 
     for workout in workouts_cardio:
@@ -117,34 +120,35 @@ def generate_exercise_plan(user_profile_weights,activity_level):
              workout["reps"] = "1 min"
 
 
-    for workout in workouts_cardio:
+    for workout in workouts_strength:
         if "low" in activity_level:
             workout["reps"] = "8"
         else:
-                workout["reps"] = "12"
+            workout["reps"] = "12"
 
     
     
 
     # for workout in workouts_strength:
     #     for exercise in workout:
+    if user_profile_weights[1] == "maintaince":
+        alternateType = ["weight gain","weight lose"]
+        exercise_type  =  alternateType[random.randint(0, 1)]
      
 
 
-    if user_profile_weights[1] == "weight gain":
+    if  exercise_type  == "weight gain":
        user_workout_plan.append(random.sample(workouts_strength, 2))
-
-       
        user_workout_plan.append(random.choice(workouts_cardio))
 
 
 
-    if user_profile_weights[1] == "weight lose":
+    if  exercise_type  == "weight lose":
           user_workout_plan.append(random.sample(workouts_cardio, 2))
           user_workout_plan.append(random.choice(workouts_strength))
+
           
-
-
+  
     
 
     return user_workout_plan
@@ -155,7 +159,7 @@ def generate_exercise_plan(user_profile_weights,activity_level):
 
 
 def write_exercise_plan_to_database(exercise_plan,user_id):
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
     print("writing to user", user_id)
   
     db = client.workouts

@@ -25,6 +25,7 @@ CORS(app)
 
 @app.route('/login',methods=['POST'])
 def login_rpc_call():
+    print("here2")
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -225,8 +226,10 @@ def create_meal_rpc_call():
 @app.route('/create_exercise', methods=['POST'])
 def create_exercise_rpc_call():
     name = request.form.get('name')
-    desciption = request.form.get('deciption')
+    deciption = request.form.get('deciption')
     type = request.form.get('type')
-    reps = request.form.get('reps')
+    reps = '0'
 
-    return(admin_rpc().create_exercise(name,desciption,type,reps))
+    print(name,deciption,type,reps)
+
+    return(admin_rpc().create_exercise(name,deciption,type,reps))

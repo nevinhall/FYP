@@ -6,7 +6,7 @@ from pymongo import MongoClient
 from bson.json_util import dumps
 
 connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host='localhost'))
+        pika.ConnectionParameters(host='rabbitmq',port="5672"))
 
 channel = connection.channel()
 
@@ -21,30 +21,36 @@ channel.queue_declare(queue='del_exercise_rpc_queue')
 
 
 #database connection
-connection_user = pymysql.connect(host="localhost",user="root",passwd="",database="users" )
+connection_user = pymysql.connect(host="mysqldb",user="root",passwd="",database="users" )
 cursor_user = connection_user.cursor()
 
-connection_user_profiles = pymysql.connect(host="localhost",user="root",passwd="",database="user_profiles" )
-cursor_user_profiles = connection_user_profiles.cursor()
 
 
 
 
 
 def get_num_users():
+    connection_user_profiles = pymysql.connect(host="mysqldb",user="root",passwd="",database="user_profiles" )
+    cursor_user_profiles = connection_user_profiles.cursor()
+
     try:
         sql = "SELECT COUNT(user_id) FROM user_profiles"
         cursor_user_profiles.execute(sql)
         result = cursor_user_profiles.fetchall()
         result = result[0][0]
+
+        connection_user_profiles.commit()
+      
     except:
         result = ("failure")
 
-
+    connection_user_profiles.close()
     return(result)
 
 
 def get_num_user_gender(gender):
+    connection_user_profiles = pymysql.connect(host="mysqldb",user="root",passwd="",database="user_profiles" )
+    cursor_user_profiles = connection_user_profiles.cursor()
     
     try:
         sql = "SELECT COUNT(user_id) FROM user_profiles WHERE gender =%s"
@@ -60,7 +66,7 @@ def get_num_user_gender(gender):
 
 def get_all_meals():
     print("Request Made for all meals")
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
     db =client.meal
  
     meals= []
@@ -72,7 +78,7 @@ def get_all_meals():
 
 def get_all_exercises():
 
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
     db =client.workouts
  
     workouts = []
@@ -83,7 +89,7 @@ def get_all_exercises():
 
 
 def creat_meal(Meal,Protein,Carbs,Fats,calories,Category,strArea,strInstructions,strYoutube):
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
     db =client.meal
     id =  str(uuid.uuid4())
 
@@ -108,7 +114,7 @@ def creat_meal(Meal,Protein,Carbs,Fats,calories,Category,strArea,strInstructions
 
 
 def create_exercise(name,desciption,type,reps):
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
     db =client.workouts
   
 
@@ -126,7 +132,7 @@ def create_exercise(name,desciption,type,reps):
 
 
 def del_meal(meal_id):
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
     print("deleting",meal_id)
     db = client.meal
     db["meals"].delete_one({"idMeal":meal_id})
@@ -135,11 +141,12 @@ def del_meal(meal_id):
   
 
 def del_exercise(exercise_name):
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
+    print("Deleting exercise: ",exercise_name,flush=True)
 
-    db = client.meal
+    db = client.workouts
     deletWhere = { "name": exercise_name}
-    db["meals"].delete_one(deletWhere)
+    db["workout"].delete_one(deletWhere)
 
     return("deleted")
   

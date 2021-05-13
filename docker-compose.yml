@@ -1,7 +1,71 @@
 version: '3'
 services: 
+    mysqldb:
+        image: mysql
+        ports:
+            - "3306:3306"
+        command: --init-file /data/application/init.sql
+        volumes:
+            - ./init.sql:/data/application/init.sql
+        environment:
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            MYSQL_PASSWORD: null
+      
     rabbitmq:
         image: rabbitmq:3.6
         ports: 
-            - 5673:5672
+            - 8001:5672
             - 15672:15672
+    gateway-service:
+        build: 
+          context: ./Services/GateWay_service
+        ports:
+            - "5000:5000"
+    login-sub-service:
+        build: 
+            context: ./Services/loginSignUp
+        restart: always
+        depends_on: 
+            - rabbitmq
+        command: ["./wait-for-it.sh", "- rabbitmq:5672", "--","python", "login_rpc_impl.py"]
+    sign-up-sub-service:
+        build: 
+            context: ./Services/loginSignUp
+            dockerfile: "dockerfile2.dockerfile"
+        restart: always
+        depends_on: 
+            - rabbitmq
+        command: ["./wait-for-it.sh", "- rabbitmq:5672", "--","python", "sign_up_rpc_impl.py"]
+    user-profile-service:
+        build: 
+            context: ./Services/UserProfile
+        restart: always
+        depends_on: 
+            - rabbitmq
+        command: ["./wait-for-it.sh", "- rabbitmq:5672", "--","python", "user_profile_rpc_impl.py"]
+    generate-meal-plan-sub-service:
+        build: 
+            context: ./Services/Recommender_service
+            dockerfile: "MealPlanDockerfile.dockerfile"
+        restart: always
+        depends_on: 
+            - rabbitmq
+        command: ["./wait-for-it.sh", "- rabbitmq:5672", "--","python", "generate_meal_plan_rpc_impl.py"]
+    generate-exercise-plan-sub-service:
+        build: 
+            context: ./Services/Recommender_service
+            dockerfile: "ExercisePlanDockerfile.dockerfile"
+        restart: always
+        depends_on: 
+            - rabbitmq
+        command: ["./wait-for-it.sh", "- rabbitmq:5672", "--","python", "geneate_exercise_plan_impl.py"]
+    admin-service:
+        build: 
+            context: ./Services/Admin
+        restart: always
+        depends_on: 
+            - rabbitmq
+        command: ["./wait-for-it.sh", "- rabbitmq:5672", "--","python", "admin_rpc_impl.py"]
+
+
+

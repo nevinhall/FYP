@@ -27,7 +27,7 @@ def normalise_data(user_profile):
     weight_lose = 0
     weight_maintaince = 0
 
-    bmi =90
+
     if(float(bmi) < 18.):
         weight_gain = weight_gain + 3
     

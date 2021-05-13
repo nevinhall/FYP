@@ -1,0 +1,5 @@
+pika
+pymongo
+PyMySQL
+validate-email
+uuid

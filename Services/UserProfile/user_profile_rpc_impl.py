@@ -9,7 +9,7 @@ from pymongo import MongoClient
 from bson.json_util import dumps
 
 connection = pika.BlockingConnection(
-    pika.ConnectionParameters('localhost'))
+     pika.ConnectionParameters(host='rabbitmq',port="5672"))
 
 channel = connection.channel()
 
@@ -215,7 +215,7 @@ the given ID an empty profile is created.
 '''
 def del_user_profile(user_id):
     #database connection
-    connection = pymysql.connect(host="localhost",user="root",passwd="",database="user_profiles" )
+    connection = pymysql.connect(host="mysqldb",user="root",passwd="",database="user_profiles" )
     cursor = connection.cursor()
 
     sql = "DELETE  FROM user_profiles WHERE user_id =%s"
@@ -228,7 +228,7 @@ def del_user_profile(user_id):
     connection.close()
 
     # user_id = "b'"+user_id+"'"
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
 
     db = client.workouts
     print("Deleting",user_id)
@@ -254,23 +254,23 @@ the given ID an empty profile is created.
 '''
 def user_profile_exist(user_id):
     #database connection
-    connection = pymysql.connect(host="localhost",user="root",passwd="",database="user_profiles" )
+    connection = pymysql.connect(host="mysqldb",user="root",passwd="",database="user_profiles" )
     cursor = connection.cursor()
     
-    print("here",user_id)
+    print("Prior to selcting with Id",user_id,flush=True)
     sql = "SELECT user_id FROM user_profiles WHERE user_id =%s"
     cursor.execute(sql,user_id)
     result = cursor.fetchone()
-    print(result)
+    print("if this is noen should create id",result,flush=True)
 
     if(result == None):
              #executing the quires
         try:
             cursor.execute("INSERT INTO user_profiles (user_id) VALUES (%s)", (user_id))
                 # cursor.execute("INSERT INTO user_profiles VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", (user_id))
-        except:
-
-            print("failed to create profile")
+        except Exception as e:
+            print(e,flush=True)
+            print("failed to create profile",flush=True)
             return("failed to create profile")
        
 
@@ -297,19 +297,19 @@ this function to populate the row.
 def create_user_profile(user_id, height,weight,activity_level,allergies,age,dietray_options,gender):
     user_profile_exist(user_id)
 
-    print(user_id)
-    print(height)
-    print(weight)
-    print(activity_level)
-    print(allergies)
-    print(age)
-    print(dietray_options)
+    print(user_id,flush=True)
+    print(height,flush=True)
+    print(weight,flush=True)
+    print(activity_level,flush=True)
+    print(allergies,flush=True)
+    print(age,flush=True)
+    print(dietray_options,flush=True)
 
     bmi = calcualte_bmi(height,weight)
     calories = calculate_calories(gender,activity_level,weight,height,age)
    
     #database connection
-    connection = pymysql.connect(host="localhost",user="root",passwd="",database="user_profiles" )
+    connection = pymysql.connect(host="mysqldb",user="root",passwd="",database="user_profiles" )
     cursor = connection.cursor()
     # some other statements  with the help of cursor
     
@@ -327,7 +327,7 @@ def create_user_profile(user_id, height,weight,activity_level,allergies,age,diet
     #commiting the connection then closing it.
     connection.commit()
     connection.close()
-    print("sent to db")
+    print("sent to db",flush=True)
 
 
     return("updated profile")
@@ -381,7 +381,7 @@ the retrieved user profile is returned.
 '''
 def get_user_profile(user_id):
     #database connection
-    connection = pymysql.connect(host="localhost",user="root",passwd="",database="user_profiles" )
+    connection = pymysql.connect(host="mysqldb",user="root",passwd="",database="user_profiles" )
     cursor = connection.cursor()
     
     print("here",user_id)
@@ -399,7 +399,7 @@ def get_user_meal_plan(user_id):
     print(user_id)
     # user_id = "b'"+user_id+"'"
     print("getting all meal plans",user_id)
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
     db =client.meal
  
     user_meal_plans = []
@@ -412,8 +412,8 @@ def get_user_meal_plan(user_id):
 
 def get_user_exercise_plan(user_id):
     user_workouts = []
-    print("getting all exercise plan") 
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    print("getting all exercise plan",flush=True) 
+    client = MongoClient('mongodb://host.docker.internal:27017')
     db = client.workouts
     
     for workout_plan in db[f"{user_id}"].find():
@@ -424,8 +424,8 @@ def get_user_exercise_plan(user_id):
 
 
 def get_current_user_meal_plan(user_id):
-    print("getting meal plan for user",user_id)
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    print("getting meal plan for user",user_id,flush=True)
+    client = MongoClient('mongodb://host.docker.internal:27017')
     db =client.meal
  
     return(dumps(db[f"{user_id}"].find_one({"inUse": {"$eq":1}})))
@@ -435,7 +435,7 @@ def get_current_user_meal_plan(user_id):
 
 def get_current_user_exercise_plan(user_id):
     print("getting exercise plan current") 
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
     db = client.workouts
     
     print("get_current_user_exercise_plan",user_id)
@@ -447,7 +447,7 @@ def get_current_user_exercise_plan(user_id):
 def set_current_user_meal_plan(user_id,meal_plan_id):
    
     print("setting meal plan for user", user_id)
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
     db =client.meal
  
     myquery =  {"inUse": {"$eq":1}}
@@ -469,8 +469,7 @@ def set_current_user_meal_plan(user_id,meal_plan_id):
 
 def set_current_user_exercise_plan(user_id,exercise_plan_id):
     print("setting exercise plan") 
-    user_id = "b'"+user_id+"'"
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
     db = client.workouts
     print("set_current_user_exercise_plan",user_id)
 

@@ -5,7 +5,7 @@ import pymysql
 from validate_email import validate_email
 
 connection = pika.BlockingConnection(
-    pika.ConnectionParameters('localhost'))
+     pika.ConnectionParameters(host='rabbitmq',port="5672"))
 
 channel = connection.channel()
 
@@ -22,7 +22,7 @@ def sign_up(user_id,email,password):
    
 
         #database connection
-        connection = pymysql.connect(host="localhost",user="root",passwd="",database="users" )
+        connection = pymysql.connect(host="mysqldb",user="root",passwd="",database="users" )
         cursor = connection.cursor()
         # some other statements  with the help of cursor
       
@@ -30,7 +30,9 @@ def sign_up(user_id,email,password):
         #executing the quires
         try:
             cursor.execute("INSERT INTO users VALUES (%s, %s, %s)", (user_id, email, password))
-        except:
+       
+        except Exception as e:
+            print(e,flush=True)
             return("failure")
        
 

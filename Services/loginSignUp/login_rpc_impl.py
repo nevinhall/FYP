@@ -4,20 +4,17 @@ from pika.connection import PRODUCT
 import pymysql
 
 connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host='localhost'))
+        pika.ConnectionParameters(host='rabbitmq',port="5672"))
 
 channel = connection.channel()
 
 channel.queue_declare(queue='rpc_queue')
 channel.queue_declare(queue='forgot_password_rpc_queue')
 
-#database connection
-
-
 
 
 def login(email,password): 
-    connection = pymysql.connect(host="localhost",user="root",passwd="",database="users" )
+    connection = pymysql.connect(host="mysqldb",user="root",passwd="",database="users" )
     cursor = connection.cursor()
     
     if(valid_email(email) and valid_password(email,password)):
@@ -31,7 +28,7 @@ def login(email,password):
 
 
 def valid_email(email):
-    connection = pymysql.connect(host="localhost",user="root",passwd="",database="users" )
+    connection = pymysql.connect(host="mysqldb",user="root",passwd="",database="users" )
     cursor = connection.cursor()
 
     sql = "SELECT * FROM users WHERE email =%s"
@@ -47,7 +44,7 @@ def valid_email(email):
 
 
 def valid_password(email,password):
-    connection = pymysql.connect(host="localhost",user="root",passwd="",database="users" )
+    connection = pymysql.connect(host="mysqldb",user="root",passwd="",database="users" )
     cursor = connection.cursor()
 
     cursor.execute("""SELECT password FROM users WHERE email = %s AND password = %s""" ,(email, password))

@@ -11,7 +11,7 @@ class admin_rpc(object):
 
     def __init__(self):
         self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='localhost'))
+            pika.ConnectionParameters(host='rabbitmq',port="5672"))
 
         self.channel = self.connection.channel()
 
@@ -190,11 +190,11 @@ class admin_rpc(object):
 
 
      
-    def create_exercise(self,name,desciption,type,reps):
+    def create_exercise(self,name,deciption,type,reps):
 
         data = {
             "name" : name,
-            "desciption": desciption,
+            "deciption": deciption,
             "type": type,
             "reps": reps
         }

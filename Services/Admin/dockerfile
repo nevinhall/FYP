@@ -1,0 +1,20 @@
+#Download Python image.
+FROM python:3-stretch
+
+ENV CURL_CA_BUNDLE=""
+
+#Set working dir.
+WORKDIR /app
+
+#Copy the current directory into the container directory.
+COPY . /app
+
+#Install dependencies
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
+
+#Make this port usable outside the container
+
+#Run webserver.py
+CMD ["admin_rpc_impl.py"]
+ 
+ 

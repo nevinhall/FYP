@@ -17,7 +17,7 @@ from bson.json_util import dumps
 Setup neccessary communication for rabbitMQ
 """
 connection = pika.BlockingConnection(
-    pika.ConnectionParameters('localhost'))
+    pika.ConnectionParameters(host='rabbitmq',port="5672"))
 
 channel = connection.channel()
 
@@ -46,6 +46,12 @@ def on_request_retrieve_user_details(ch, method, props, body):
     
     
     user_profile = retrieve_user_details(user_id)
+    print("profile",user_profile, flush=True)
+
+    dietary_options  = json.loads(user_profile)
+    dietary_options =  dietary_options[5]
+    
+    print("Dietary Option prior to sending to combinatorial",dietary_options,flush=True)
 
     print(user_profile)
     user_profile_normalised,total_calories,activity_level= prep_data.normalise_data(user_profile)
@@ -60,7 +66,7 @@ def on_request_retrieve_user_details(ch, method, props, body):
        total_calories = total_calories + 700
 
     user_profile_weights = user_profile_weights[0]
-    response = Combinatorial_algorithm.Combinatorial_algorithm().create_meal_plan(is_optimal,user_profile_weights,total_calories)
+    response = Combinatorial_algorithm.Combinatorial_algorithm(dietary_options).create_meal_plan(is_optimal,user_profile_weights,total_calories)
     response =  write_meal_plan_to_database(response,user_id)
 
 
@@ -90,7 +96,7 @@ def retrieve_user_details(user_id):
 
 
 def write_meal_plan_to_database(mealplan,user_id):
-    client = MongoClient('mongodb://127.0.0.1:27017')
+    client = MongoClient('mongodb://host.docker.internal:27017')
     planID = str(uuid.uuid4())
     db =client.meal
     db[f"{user_id}"].insert_one({"ID":planID,"inUse":1,"favourited":0,"mealplan":mealplan})

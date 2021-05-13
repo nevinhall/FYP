@@ -18,7 +18,7 @@ class Create_meal_plan_weights():
         Prepare data for matrix factorisation
         '''
 
-        diets_matrix_factorization = pd.read_csv("C:/Users/R00165035/Desktop/FYP/Services/Recommender_service/recommender_system/diets.csv")
+        diets_matrix_factorization = pd.read_csv("./recommender_system/diets.csv")
         user_profile =  pd.read_json(user_profile)
 
         diet_plan_type_index = user_profile["rating"].idxmax()
