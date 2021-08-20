@@ -4,10 +4,8 @@ from pymongo import MongoClient
 import re
 import pika
 import json
-import pymysql
 from validate_email import validate_email
 import uuid
-import io
 import random
 import pandas as pd
 import rpc_call
@@ -45,20 +43,16 @@ def on_request_retrieve_user_details(ch, method, props, body):
     user_id = user_id.strip("'")
     user_id = user_id[2:]
 
-    print("GEN EXERCISE: Fetching profile with ID",user_id)
+    print("GEN EXERCISE: Fetching profile with ID",user_id,flush=True)
     user_profile = retrieve_user_details(user_id)
-    print("GEN EXERCISE: Fetched profile result",user_profile)
+    print("GEN EXERCISE: Fetched profile result",user_profile,flush=True)
    
     user_profile_normalised,calories,activity_level  = prep_data.normalise_data(user_profile)
     user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile_normalised)
+
     response = generate_exercise_plan(user_profile_weights,activity_level)
-    print(activity_level)
     response = write_exercise_plan_to_database(response,user_id)
 
-
-
-    
-    
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
                      properties=pika.BasicProperties(correlation_id= \
@@ -76,12 +70,13 @@ the function retrieves a user profile for the given ID.
 """
 def retrieve_user_details(user_id):
  
-
-    print(str(user_id))
+    print("GEN EXERCISE PLAN: FUNC: retrieve_user_details ->",str(user_id),flush=True)
     user_profile = rpc_call.rpc_call().get_user_profile(user_id)
 
 
     return user_profile
+
+    
 
 def retrieve_workouts(user_profile_weights):
     client = MongoClient('mongodb://host.docker.internal:27017')
@@ -127,10 +122,7 @@ def generate_exercise_plan(user_profile_weights,activity_level):
             workout["reps"] = "12"
 
     
-    
 
-    # for workout in workouts_strength:
-    #     for exercise in workout:
     if user_profile_weights[1] == "maintaince":
         alternateType = ["weight gain","weight lose"]
         exercise_type  =  alternateType[random.randint(0, 1)]
@@ -147,23 +139,17 @@ def generate_exercise_plan(user_profile_weights,activity_level):
           user_workout_plan.append(random.sample(workouts_cardio, 2))
           user_workout_plan.append(random.choice(workouts_strength))
 
-          
-  
     
-
     return user_workout_plan
-    #develop futher
-    # else:
-    #       user_workout_plan.append(random.sample(group_of_items, num_to_select))
-    #       user_workout_plan.append(random.choice(foo))
+
 
 
 def write_exercise_plan_to_database(exercise_plan,user_id):
     client = MongoClient('mongodb://host.docker.internal:27017')
-    print("writing to user", user_id)
+ 
+    print("GEN EXERCISE PLAN: FUNC: write_exercise_plan_to_database -> writing to user", user_id,flush=True)
   
     db = client.workouts
-    # db[f"{user_id}"].drop()
     planID = str(uuid.uuid4())
     db[f"{user_id}"].insert_one({"ID":planID,"inUse":1,"favourited":0,"exercise_plan":exercise_plan})
    
@@ -178,7 +164,7 @@ Make service open to recieve requests.
 channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue='generate_exercise_plan_rpc_queue', on_message_callback=on_request_retrieve_user_details)
 
-print(" GenExerciselPlan Awaiting RPC requests")
+print(" GenExerciselPlan Awaiting RPC requests",flush=True)
 channel.start_consuming()
 
 

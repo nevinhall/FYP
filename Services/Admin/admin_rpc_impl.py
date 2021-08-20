@@ -26,9 +26,6 @@ cursor_user = connection_user.cursor()
 
 
 
-
-
-
 def get_num_users():
     connection_user_profiles = pymysql.connect(host="mysqldb",user="root",passwd="",database="user_profiles" )
     cursor_user_profiles = connection_user_profiles.cursor()
@@ -45,7 +42,11 @@ def get_num_users():
         result = ("failure")
 
     connection_user_profiles.close()
+
+
     return(result)
+
+
 
 
 def get_num_user_gender(gender):
@@ -64,8 +65,10 @@ def get_num_user_gender(gender):
     return(result)
 
 
+
+
 def get_all_meals():
-    print("Request Made for all meals")
+    print("ADMIN IMPL, FUNC:get_all_meals() -> Request Made for all meals", flush=True)
     client = MongoClient('mongodb://host.docker.internal:27017')
     db =client.meal
  
@@ -107,9 +110,11 @@ def creat_meal(Meal,Protein,Carbs,Fats,calories,Category,strArea,strInstructions
 
     }
   
-
     db["meals"].insert_one(values)
+
+
     return("done")
+
 
 
 
@@ -117,7 +122,6 @@ def create_exercise(name,desciption,type,reps):
     client = MongoClient('mongodb://host.docker.internal:27017')
     db =client.workouts
   
-
     values = {
         "name": name,
         "deciption": desciption,
@@ -127,6 +131,8 @@ def create_exercise(name,desciption,type,reps):
   
 
     db["workout"].insert_one(values)
+
+
     return("done")
 
 
@@ -140,9 +146,10 @@ def del_meal(meal_id):
     return("deleted")
   
 
+
 def del_exercise(exercise_name):
     client = MongoClient('mongodb://host.docker.internal:27017')
-    print("Deleting exercise: ",exercise_name,flush=True)
+    print("ADMIN IMPL, FUNC: del_exercise -> Deleting exercise: ",exercise_name,flush=True)
 
     db = client.workouts
     deletWhere = { "name": exercise_name}
@@ -264,10 +271,6 @@ def on_request_get_num_users(ch, method, props, body):
                                                          props.correlation_id),
                      body=str(response))
     ch.basic_ack(delivery_tag=method.delivery_tag)
-
-
-
-
 
 
 

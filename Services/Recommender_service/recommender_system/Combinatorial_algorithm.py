@@ -1,5 +1,4 @@
 from re import M
-import re
 from pymongo import MongoClient
 import json
 from numpy import log, random
@@ -28,8 +27,7 @@ class Combinatorial_algorithm():
         self.fats_avg = 0.10
 
         self.dietary_needs = dietary_needs
-        print("innot dietary iptions",self.dietary_needs,flush=True)
-
+     
         self.protein_heavy_meal,self.protein_heavy_meal_ids ,self.protein_heavy_meal_calories,self.protein_heavy_meal_macro_preference = self.find_meals("Protein",self.protein_avg,self.dietary_needs)
         self.carb_heavy_meal ,self.carb_heavy_meal_ids ,self.carb_heavy_meal_calories ,self.carb_heavy_meal_macro_preference = self.find_meals("Carbs",self.carbs_avg,self.dietary_needs)
         self.fats_heavy_meal,self.fats_heavy_meal_ids,self.fats_heavy_meal_calories,self.fats_heavy_meal_macro_preference = self.find_meals("Fats",self.fats_avg,self.dietary_needs)
@@ -45,9 +43,9 @@ class Combinatorial_algorithm():
         meal_calories = []
         meal_macro_preference  = []
 
-        print("Dietary option find meal",diet_restrictions,flush=True)
+
         if diet_restrictions == "Vegatarian":
-                print("THis should be vegatarian",flush=True)
+                print("COMBO ALGO: FUNC: find_meal -> Generating a vegatarian based meal",flush=True)
                 for meal in self.db.meals.find({"$and":[{macro: {"$gte": macro_avg}},{"Category": {"$eq":"Vegetarian"}}]}):
                     meals.append(meal)
                     meals_ids.append(meal['idMeal'])
@@ -128,7 +126,6 @@ class Combinatorial_algorithm():
     @return: Array meals,meals_ids, Array meals_calories, Array meal_macro_preferences  
     """
     def shuffle_arrays(self,meals,meals_ids, meals_calories, meal_macro_preferences):
-        print("************************")
         indexes =random.randint((len(meals)), size=(int(len(meals)/2)))
         indexes = list(dict.fromkeys(indexes))
 
@@ -140,7 +137,8 @@ class Combinatorial_algorithm():
 
         return meals,meals_ids, meals_calories, meal_macro_preferences
 
-    #TOD0: MAKING UNIQUE DROPS CALORIES
+
+
     """
     This code is responsible for generating a meal plan for a given macro group and ensuring it there
     are no duplicates.
@@ -164,7 +162,7 @@ class Combinatorial_algorithm():
             print(key,calorie_ratio)
 
             if(is_Optimal == "false"):
-                print("Generating non optimal meal plan")
+                print("COMBO ALGO: FUNC: create_meal_plan -> Generating non optimal meal plan",flush=True)
                 protein_heavy_meal, protein_heavy_meal_ids, protein_heavy_meal_calories, protein_heavy_meal_macro_preference  = self.shuffle_arrays(self.protein_heavy_meal, self.protein_heavy_meal_ids, self.protein_heavy_meal_calories, self.protein_heavy_meal_macro_preference )
                 carb_heavy_meal, carb_heavy_meal_ids, carb_heavy_meal_calories, carb_heavy_meal_macro_preference= self.shuffle_arrays(self.carb_heavy_meal, self.carb_heavy_meal_ids, self.carb_heavy_meal_calories, self.carb_heavy_meal_macro_preference)
                 fats_heavy_meal, fats_heavy_meal_ids,fats_heavy_meal_calories ,fats_heavy_meal_macro_preference= self.shuffle_arrays(self.fats_heavy_meal, self.fats_heavy_meal_ids,self.fats_heavy_meal_calories ,self.fats_heavy_meal_macro_preference)

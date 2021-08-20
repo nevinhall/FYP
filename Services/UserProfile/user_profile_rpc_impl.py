@@ -227,11 +227,10 @@ def del_user_profile(user_id):
     connection.commit()
     connection.close()
 
-    # user_id = "b'"+user_id+"'"
     client = MongoClient('mongodb://host.docker.internal:27017')
 
     db = client.workouts
-    print("Deleting",user_id)
+    print("USER PROFILE IMPLC: FUNC:del_user_profile ->Deleting",user_id,flush=True)
 
     db[f"{user_id}"].drop()
 
@@ -257,11 +256,10 @@ def user_profile_exist(user_id):
     connection = pymysql.connect(host="mysqldb",user="root",passwd="",database="user_profiles" )
     cursor = connection.cursor()
     
-    print("Prior to selcting with Id",user_id,flush=True)
     sql = "SELECT user_id FROM user_profiles WHERE user_id =%s"
     cursor.execute(sql,user_id)
     result = cursor.fetchone()
-    print("if this is noen should create id",result,flush=True)
+  
 
     if(result == None):
              #executing the quires
@@ -311,9 +309,8 @@ def create_user_profile(user_id, height,weight,activity_level,allergies,age,diet
     #database connection
     connection = pymysql.connect(host="mysqldb",user="root",passwd="",database="user_profiles" )
     cursor = connection.cursor()
-    # some other statements  with the help of cursor
-    
 
+    
     #executing the quires
     try:
         cursor.execute("UPDATE user_profiles SET height = %s , weight = %s, bmi = %s, activity_level = %s, dietary_options = %s, allergies = %s,age = %s,calories = %s, gender = %s WHERE user_id = %s",(
@@ -327,7 +324,8 @@ def create_user_profile(user_id, height,weight,activity_level,allergies,age,diet
     #commiting the connection then closing it.
     connection.commit()
     connection.close()
-    print("sent to db",flush=True)
+    print("USER PROFILE IMPL: FUNC:create_user_profile ->sent to db",flush=True)
+
 
 
     return("updated profile")
@@ -343,12 +341,14 @@ from a centemeters to meters.
 @returns integer BMI Value.
 '''
 def calcualte_bmi(height,weight):
-    print("weight",weight)
+
     height = float(height) /100
     weight = int(weight)
 
 
     return int(weight/(height**2))
+
+
 
 def calculate_calories(gender,activity_level,weight,height,age):
     kg_to_lbs = int(weight) * 2.205
@@ -371,6 +371,7 @@ def calculate_calories(gender,activity_level,weight,height,age):
 
     return calories
 
+
 '''
 This method is responisbe for getting a user profile given an ID
 the retrieved user profile is returned.
@@ -383,8 +384,7 @@ def get_user_profile(user_id):
     #database connection
     connection = pymysql.connect(host="mysqldb",user="root",passwd="",database="user_profiles" )
     cursor = connection.cursor()
-    
-    print("here",user_id)
+
     sql = "SELECT * FROM user_profiles WHERE user_id =%s"
     cursor.execute(sql,user_id)
     user_profile = cursor.fetchone()
@@ -394,11 +394,8 @@ def get_user_profile(user_id):
 
 
 
-
 def get_user_meal_plan(user_id):
-    print(user_id)
-    # user_id = "b'"+user_id+"'"
-    print("getting all meal plans",user_id)
+    print("USER PROFILE IMPL: FUNC:  get_user_meal_plan-> getting all meal plans",user_id ,flush=True)
     client = MongoClient('mongodb://host.docker.internal:27017')
     db =client.meal
  
@@ -412,7 +409,7 @@ def get_user_meal_plan(user_id):
 
 def get_user_exercise_plan(user_id):
     user_workouts = []
-    print("getting all exercise plan",flush=True) 
+    print("USER PROFILE IMPL: FUNC: get_user_exercise_plan -> getting all exercise plan",flush=True) 
     client = MongoClient('mongodb://host.docker.internal:27017')
     db = client.workouts
     
@@ -424,7 +421,7 @@ def get_user_exercise_plan(user_id):
 
 
 def get_current_user_meal_plan(user_id):
-    print("getting meal plan for user",user_id,flush=True)
+    print("USER PROFILE IMPL: FUNC: get_current_user_meal_plan -> getting meal plan for user",user_id,flush=True)
     client = MongoClient('mongodb://host.docker.internal:27017')
     db =client.meal
  
@@ -434,11 +431,11 @@ def get_current_user_meal_plan(user_id):
 
 
 def get_current_user_exercise_plan(user_id):
-    print("getting exercise plan current") 
+    print("USER PROFILE IMPL: FUNC: get_current_user_exercise_plan-> getting exercise plan current",flush=True)
     client = MongoClient('mongodb://host.docker.internal:27017')
     db = client.workouts
     
-    print("get_current_user_exercise_plan",user_id)
+
     return(dumps(db[f"{user_id}"].find_one({"inUse": {"$eq":1}})))
 
 
@@ -446,7 +443,7 @@ def get_current_user_exercise_plan(user_id):
 
 def set_current_user_meal_plan(user_id,meal_plan_id):
    
-    print("setting meal plan for user", user_id)
+    print("USER PROFILE IMPL: FUNC: set_current_user_meal_plan -> setting meal plan for user", user_id,flush=True)
     client = MongoClient('mongodb://host.docker.internal:27017')
     db =client.meal
  
@@ -464,20 +461,17 @@ def set_current_user_meal_plan(user_id,meal_plan_id):
 
   
 
-
-
-
 def set_current_user_exercise_plan(user_id,exercise_plan_id):
-    print("setting exercise plan") 
+    print("USER PROFILE IMPL: FUNC: set_current_user_exercise_plan -> setting exercise plan",flush=True)
     client = MongoClient('mongodb://host.docker.internal:27017')
     db = client.workouts
-    print("set_current_user_exercise_plan",user_id)
+    
 
     myquery =  {"inUse": {"$eq":1}}
     newvalues = { "$set": {"inUse": 0} }
 
     db[f"{user_id}"].update_many(myquery, newvalues)
-    print(  db[f"{user_id}"].find_one())
+
 
     myquery =  {"ID": {"$eq":exercise_plan_id}}
     newvalues = { "$set": {"inUse": 1} }
@@ -504,5 +498,5 @@ channel.basic_consume(queue='get_current_user_exercise_plan_rpc_queue', on_messa
 
 
 
-print(" User Profile Awaiting RPC requests")
+print(" User Profile Awaiting RPC requests",flush=True)
 channel.start_consuming()

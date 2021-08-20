@@ -1,11 +1,8 @@
-import re
 import pika
 import json
-import pymysql
 from pymongo import MongoClient
 from validate_email import validate_email
 import uuid
-import io
 import pandas as pd
 import rpc_call
 from recommender_system import Create_meal_plan_weights
@@ -36,24 +33,20 @@ The function then creates the macro ratios for the given user profile
 """
 def on_request_retrieve_user_details(ch, method, props, body):
   
+    print("GEN MEAL PLAN: FUNC:on_request_retrieve_user_details ->", body, flush=True)
 
-    print(body)
-   
     body = json.loads(body)
     user_id = body['user_id']
     is_optimal = body['is_optimal']
-    print("is optimal:" ,is_optimal)
-    
     
     user_profile = retrieve_user_details(user_id)
-    print("profile",user_profile, flush=True)
+
 
     dietary_options  = json.loads(user_profile)
     dietary_options =  dietary_options[5]
     
-    print("Dietary Option prior to sending to combinatorial",dietary_options,flush=True)
 
-    print(user_profile)
+    print("GEN MEAL PLAN: FUNC:on_request_retrieve_user_details ->",user_profile, flush=True)
     user_profile_normalised,total_calories,activity_level= prep_data.normalise_data(user_profile)
     user_profile_weights = Create_meal_plan_weights.Create_meal_plan_weights().create_meal_plan_weights(user_profile_normalised)
 
@@ -69,8 +62,6 @@ def on_request_retrieve_user_details(ch, method, props, body):
     response = Combinatorial_algorithm.Combinatorial_algorithm(dietary_options).create_meal_plan(is_optimal,user_profile_weights,total_calories)
     response =  write_meal_plan_to_database(response,user_id)
 
-
-    
     
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,

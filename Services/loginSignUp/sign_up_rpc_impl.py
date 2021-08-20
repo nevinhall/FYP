@@ -1,4 +1,3 @@
-import re
 import pika
 import json
 import pymysql
@@ -17,15 +16,13 @@ def valid_email(email):
 
 
 def sign_up(user_id,email,password):
-    print("hitting sign up")
+    print("SIGN UP IMPL, FUNC: sign_up -> hitting sign up", flush=True)
+
     if(valid_email(email)):
    
-
         #database connection
         connection = pymysql.connect(host="mysqldb",user="root",passwd="",database="users" )
-        cursor = connection.cursor()
-        # some other statements  with the help of cursor
-      
+        cursor = connection.cursor()      
 
         #executing the quires
         try:
@@ -39,7 +36,7 @@ def sign_up(user_id,email,password):
         #commiting the connection then closing it.
         connection.commit()
         connection.close()
-        print("sent to db")
+        print("SIGN UP IMPL, FUNC: sign_up -> sent to db",flush=True)
         
 
        
@@ -48,6 +45,8 @@ def sign_up(user_id,email,password):
 
 def valid_email(email):
     return validate_email(email)
+
+
 
 def on_request_sign_up(ch, method, props, body):
     
@@ -71,5 +70,5 @@ channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue='sign_up_rpc_gueue', on_message_callback=on_request_sign_up)
 
 
-print(" [x] Awaiting RPC requests")
+print(" Sign-Up Service Awaiting RPC requests",flush=True)
 channel.start_consuming()

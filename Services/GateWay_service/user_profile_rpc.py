@@ -23,6 +23,8 @@ class user_profile_rpc(object):
             on_message_callback=self.on_response,
             auto_ack=True)
 
+
+
     def on_response(self, ch, method, props, body):
         if self.corr_id == props.correlation_id:
             self.response = body
@@ -164,6 +166,7 @@ class user_profile_rpc(object):
             self.connection.process_data_events()
         return self.response
 
+
     
     def set_user_current_meal_plan(self,user_id,meal_plan_id):
         data = {
@@ -229,6 +232,7 @@ class user_profile_rpc(object):
         while self.response is None:
             self.connection.process_data_events()
         return self.response
+
 
 
     def create_user_profile(self,user_id, height,weight,activity_level,allergies,age,dietray_options,gender):

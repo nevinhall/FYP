@@ -24,9 +24,12 @@ class login_rpc(object):
             auto_ack=True)
 
 
+
     def on_response(self, ch, method, props, body):
         if self.corr_id == props.correlation_id:
             self.response = body
+
+
 
     def call(self, email,password):
 
@@ -50,6 +53,7 @@ class login_rpc(object):
         while self.response is None:
             self.connection.process_data_events()
         return self.response
+
 
 
     def forgot_password(self, email,password):

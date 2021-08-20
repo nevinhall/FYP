@@ -39,7 +39,11 @@ class Create_meal_plan_weights():
         """
         Use matrix factorisation to generate a recommendation for each macro group
         """
+        print("CREATE WEIGHTS: FUNC: create_weights -> user matrix =",user_profile.rating,flush=True)
+        print("CREATE WEIGHTS: FUNC: create_weights -> diets matrix=", diets_matrix_factorization,flush=True)
         generated_user_intrests = diets_matrix_factorization.T.dot(user_profile.rating) 
+        print("CREATE WEIGHTS: FUNC: create_weights -> result matrix=", generated_user_intrests,flush=True)
+
 
      
         macro_predictions = {
@@ -56,11 +60,11 @@ class Create_meal_plan_weights():
             macro_predictions[key]  = round(generated_user_intrests.iloc[i]/ (generated_user_intrests.sum() - generated_user_intrests.iloc[3]), 3)
             i = i+1
   
-        print("Ratio of Macros")
+        print("Create Meal Plan Weights: FUNC: create_meal_plan_weights -> Ratio of Macros",flush=True)
         print("p:",  list(macro_predictions.values())[0])
         print("c:",  list(macro_predictions.values())[1])
         print("f:",  list(macro_predictions.values())[2])
-
+        print("Diet Type",diet_plan_type, flush=True)
        
        
 

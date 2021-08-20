@@ -28,6 +28,7 @@ class generate_exercise_plan_rpc(object):
         if self.corr_id == props.correlation_id:
             self.response = body
 
+
     def generate_exercise_plan_rpc(self, user_id):
 
         self.response = None

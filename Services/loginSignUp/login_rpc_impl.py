@@ -22,9 +22,10 @@ def login(email,password):
         cursor.execute(sql,email)
         result = cursor.fetchall()
 
- 
+
         return(result[0][0])
     return("failure")
+
 
 
 def valid_email(email):
@@ -34,11 +35,12 @@ def valid_email(email):
     sql = "SELECT * FROM users WHERE email =%s"
     cursor.execute(sql,email)
     result = cursor.fetchone()
-    print("Valid email",result)
-
+    print("LOGIN IMPL, FUNC:valid_email ->  Valid email",result,flush=True)
 
     if(result == None):
         return False
+
+
     return True
 
 
@@ -49,10 +51,13 @@ def valid_password(email,password):
 
     cursor.execute("""SELECT password FROM users WHERE email = %s AND password = %s""" ,(email, password))
     result = cursor.fetchone()
-   
-    print("Valid password", result)
+
+    print("LOGIN IMPL, FUNC:valid_password -> Valid password", result,flush=True)
+
     if(result == None):
         return False
+
+
     return True
 
 
@@ -104,5 +109,5 @@ channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue='rpc_queue', on_message_callback=on_request)
 channel.basic_consume(queue='forgot_password_rpc_queue', on_message_callback = on_request_forgot_password)
 
-print(" [x] Awaiting RPC requests")
+print("Login Service Awaiting RPC requests")
 channel.start_consuming()

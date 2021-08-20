@@ -46,8 +46,6 @@ def forgot_password_rpc_call():
 
         return(login_rpc().forgot_password(email, password))
 
-
-
     return("login failed")
 
 
@@ -56,7 +54,6 @@ def get_user_profile_rpc_call():
     uuid =  request.form.get('user_id')
 
     return user_profile_rpc().get_user_profile(uuid)
-
 
 
 @app.route('/signup',methods=['POST'])
@@ -68,7 +65,6 @@ def sign_up_rpc_call():
     return(sign_up_rpc().sign_up(email,password))
      
 
-
 @app.route('/userexists', methods=['POST'])
 def uses_exists_rpc_call():
     user_id = request.form.get('user_id')
@@ -77,16 +73,12 @@ def uses_exists_rpc_call():
     return(user_profile_rpc().user_exists(user_id))
 
 
-
 @app.route('/deluser', methods=['POST'])
 def del_user_rpc_call():
     user_id = request.form.get('user_id')
 
 
     return(user_profile_rpc().del_user(user_id))
-
-
-
 
 
 @app.route('/createuserprofile', methods=['Post'])
@@ -104,7 +96,6 @@ def create_user_profile_rpc_call():
         return(user_profile_rpc().create_user_profile(user_id, height, weight, activity_level, allergies, age,dietray_options,gender))
 
 
-
 @app.route('/generatemealplan', methods=['Post'])
 def generate_meal_plan_rpc_call():
       print( request.form)
@@ -115,11 +106,7 @@ def generate_meal_plan_rpc_call():
       print("is_optiaml",is_optimal)
 
       return(generate_meal_plan_rpc().generate_meal_plan_rpc(user_id,is_optimal))
-    #set FLASK_APP=gateway.py
-    #$env:FLASK_APP = "gateway.py"
-    #flask run
 
-      #set FLASK_APP=gateway && $env:FLASK_APP = "gateway.py" && flask run
 
 @app.route('/generateexerciseplan', methods=['Post'])
 def generate_exercise_plan_rpc_call():
@@ -148,8 +135,6 @@ def set_current_user_exercise_plan_rpc_call():
     return(user_profile_rpc().set_user_current_exercise_plan(user_id,exercise_plan_id))
 
 
-
-
 @app.route('/set_current_user_meal_plan', methods=['Post'])
 def set_current_user_meal_plan_rpc_call():
     user_id = request.form.get('user_id')
@@ -157,7 +142,6 @@ def set_current_user_meal_plan_rpc_call():
 
 
     return(user_profile_rpc().set_user_current_meal_plan(user_id,meal_plan_id))
-
 
 
 @app.route('/get_user_current_meal_plan', methods=['Post'])
@@ -172,8 +156,6 @@ def get_user_current_exercise_plan_rpc_call():
     user_id = request.form.get('user_id')
   
     return(user_profile_rpc().get_user_current_exercise_plan(user_id))
-
-
 
 
 @app.route('/get_num_users', methods=['Get'])
